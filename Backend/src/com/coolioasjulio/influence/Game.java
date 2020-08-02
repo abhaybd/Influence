@@ -68,25 +68,31 @@ public abstract class Game {
     }
 
     private boolean doAction(Action action, Card card, Player player, Player target) {
-        // If there is no card associated with this action, it cannot be challenged
-        Player challenge = card == null ? null : getChallenge(action, card, player);
-        if (challenge != null) {
-            // If the action has been challenged, determine if the player was lying
-            boolean lying = !player.hasCard(card);
-            // If the player was lying, they sacrifice a card. Otherwise, the challenger does
-            sacrificeCard(lying ? player : challenge);
-            // Don't continue with this action if the player was lying, or if the target died during the challenge
-            if (lying || (target != null && target.getInfluence() == 0)) return false;
-        }
-
-        // If this action can be blocked by anything, prompt the frontend for any blocks
-        Block block = action.blockedBy.isEmpty() ? null : getBlock(action, player);
-        if (block != null) {
-            // This block can itself be challenged, so we can reuse the doAction() method
-            // block.player refers to the player blocking this action
-            // block.card refers to the card being used by the player to block this action
-            if (doAction(Action.Block, block.card, block.player, player)) {
-                return false;
+        CounterAction counterAction = getCounterAction(action, card, player, target);
+        if (counterAction != null) {
+            if (counterAction.isBlock) {
+                // This block can itself be challenged, so we can reuse the doAction() method
+                // block.player refers to the player blocking this action
+                // block.card refers to the card being used by the player to block this action
+                if (doAction(Action.Block, counterAction.card, counterAction.player, player)) {
+                    return false;
+                }
+            } else {
+                // If the action has been challenged, determine if the player was lying
+                boolean lying = !player.hasCard(card);
+                // If the player was lying, they sacrifice a card. Otherwise, the challenger does
+                if (lying) {
+                    sacrificeCard(player);
+                } else {
+                    sacrificeCard(counterAction.player);
+                    // If the player wasn't lying, shuffle their card back into the deck and draw a new one
+                    player.removeCard(card);
+                    deck.add(card);
+                    shuffleDeck();
+                    player.addCard(getTopCard());
+                }
+                // Don't continue with this action if the player was lying, or if the target died during the challenge
+                if (lying || (target != null && target.getInfluence() == 0)) return false;
             }
         }
 
@@ -105,7 +111,12 @@ public abstract class Game {
                 break;
 
             case Assassinate:
+                player.coins -= 3;
+                sacrificeCard(target);
+                break;
+
             case Coup:
+                player.coins -= 7;
                 sacrificeCard(target);
                 break;
 
@@ -215,24 +226,7 @@ public abstract class Game {
      */
     protected abstract Card[] doExchange(Player player, Card[] cards);
 
-    /**
-     * Get any challenger for an action.
-     *
-     * @param action The action being done.
-     * @param card   The card being used to do said action.
-     * @param player The player doing said action.
-     * @return The player that is blocking this action. If no player is blocking this action, then null.
-     */
-    protected abstract Player getChallenge(Action action, Card card, Player player);
-
-    /**
-     * Get any block to this action.
-     *
-     * @param action The blockable action being done.
-     * @param player The player doing this action.
-     * @return A block object representing the player blocking this action and the card being used to block.
-     */
-    protected abstract Block getBlock(Action action, Player player);
+    protected abstract CounterAction getCounterAction(Action action, Card card, Player player, Player target);
 
     /**
      * Get a card to sacrifice from the hand of this player.
@@ -242,20 +236,18 @@ public abstract class Game {
      */
     protected abstract Card getCardToSacrifice(Player player);
 
-    /**
-     * Represents a block made by a player against another player.
-     * A block consists of the player making the block, and the card being used to do the block.
-     */
-    protected static class Block {
+    protected static class CounterAction {
+        public boolean isBlock;
         public Player player;
         public Card card;
 
-        public Block(Player player, Card card) {
+        public CounterAction(boolean isBlock, Player player, Card card) {
+            this.isBlock = isBlock;
             this.player = player;
             this.card = card;
         }
 
-        public Block() {
+        public CounterAction() {
         }
     }
 }

@@ -34,6 +34,16 @@ public class Player {
         return Arrays.stream(cards).anyMatch(c -> c == card);
     }
 
+    public boolean addCard(Card card) {
+        for (int i = 0; i < cards.length; i++) {
+            if (cards[i] == null) {
+                cards[i] = card;
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void removeCard(Card card) {
         if (cards[0] == card) {
             cards[0] = cards[1];
@@ -43,5 +53,10 @@ public class Player {
         } else {
             throw new IllegalArgumentException(String.format("Player %s does not have card %s in their hand!", name, card));
         }
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

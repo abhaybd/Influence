@@ -1,9 +1,6 @@
 package com.coolioasjulio.influence;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class MockGame extends Game {
 
@@ -67,83 +64,88 @@ public class MockGame extends Game {
     @Override
     protected Card[] doExchange(Player player, Card[] cards) {
         boolean success = false;
-        List<Integer> indexes = null;
+        List<Card> kept = new ArrayList<>();
+        Set<Card> set = new HashSet<>(Arrays.asList(cards));
         do {
-            System.out.println("Choose indexes to keep:");
-            for (int i = 0; i < cards.length; i++) {
-                System.out.printf("%d - %s\n", i, cards[i]);
-            }
+            System.out.println("Choose cards to keep: " + Arrays.toString(cards));
             String line = in.nextLine();
             try {
                 String[] parts = line.split(",");
                 if (parts.length != player.getInfluence()) continue;
-                indexes = new ArrayList<>();
-                for (String p : parts) {
-                    indexes.add(Integer.parseInt(p));
-                }
+                kept.clear();
                 success = true;
+                for (String s : parts) {
+                    Card c = Card.valueOf(s);
+                    kept.add(c);
+                    if (!set.contains(c)) {
+                        success = false;
+                        break;
+                    }
+                }
             } catch (Exception e) {
-                // ignored
+                success = false;
             }
         } while (!success);
 
-        return indexes.stream().map(i -> cards[i]).toArray(Card[]::new);
+        return kept.toArray(new Card[0]);
     }
 
     @Override
-    protected Player getChallenge(Action action, Card card, Player player) {
-        Player challenger;
-        do {
-            System.out.println("Who challenges?");
-            String name = in.nextLine();
-            if (name.length() == 0) return null;
-            challenger = Arrays.stream(players).filter(p -> p.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
-        } while (challenger == null);
-        return challenger;
-    }
-
-    @Override
-    protected Block getBlock(Action action, Player player) {
-        Block b = new Block();
-
-        do {
-            System.out.println("Who blocks?");
-            String line = in.nextLine();
-            if (line.length() == 0) return null;
-            b.player = Arrays.stream(players).filter(p -> p.getName().equalsIgnoreCase(line)).findFirst().orElse(null);
-        } while (b.player == null);
-
-        do {
-            System.out.println("Which card?");
-            String line = in.nextLine();
-            if (line.length() == 0) return null;
-            try {
-                b.card = Card.valueOf(line);
-            } catch(IllegalArgumentException e) {
-                // ignored
+    protected CounterAction getCounterAction(Action action, Card card, Player player, Player target) {
+        CounterAction counterAction = new CounterAction();
+        if (action == Action.ForeignAid) {
+            counterAction.player = getObjectFromInput("Who blocks?", players);
+            counterAction.card = Card.Duke;
+            counterAction.isBlock = true;
+        } else {
+            if (card == null) {
+                return null;
             }
-        } while (b.card == null);
-
-        return b;
+            if (action.blockedBy.isEmpty()) {
+                counterAction.player = getObjectFromInput("Who challenges?", players);
+                counterAction.isBlock = false;
+            } else {
+                counterAction.player = getObjectFromInput("Who performs counter action?", players);
+                if (counterAction.player == null) return null;
+                Boolean block = null;
+                do {
+                    System.out.println("Block or challenge?");
+                    String line = in.nextLine();
+                    if (line.equalsIgnoreCase("block")) block = true;
+                    else if (line.equalsIgnoreCase("challenge")) block = false;
+                } while (block == null);
+                counterAction.isBlock = block;
+                if (block) {
+                    counterAction.card = getObjectFromInput("What card do you use to block?", Card.values());
+                }
+            }
+        }
+        return counterAction.player == null ? null : counterAction;
     }
 
     @Override
     protected Card getCardToSacrifice(Player player) {
-        Card toSacrifice = null;
+        Card[] cards = player.getCards();
+        Card toSacrifice;
         do {
-            Card[] cards = player.getCards();
-            System.out.printf("%s, sacrifice one card! Cards - %s\n", player.getName(), Arrays.toString(cards));
-            int influence = player.getInfluence();
-            String line = in.nextLine();
-            try {
-                int i = Integer.parseInt(line);
-                if (i >= 0 && i < influence) {
-                    toSacrifice = cards[i];
-                }
-            } catch (Exception e) {
-                // ignored
-            }
+            toSacrifice = getObjectFromInput(
+                    String.format("%s, sacrifice one card! Cards - %s", player.getName(), Arrays.toString(cards)), cards);
         } while (toSacrifice == null);
         return toSacrifice;
+    }
+
+    private <T> T getObjectFromInput(String prompt, T[] objects) {
+        T ret;
+        do {
+            System.out.println(prompt);
+            String name = in.nextLine();
+            if (name.length() == 0) return null;
+            ret = Arrays.stream(objects)
+                    .filter(Objects::nonNull)
+                    .filter(p -> p.toString().equalsIgnoreCase(name))
+                    .findFirst()
+                    .orElse(null);
+        } while (ret == null);
+        return ret;
     }
 }
