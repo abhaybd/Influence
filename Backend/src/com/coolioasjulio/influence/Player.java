@@ -31,7 +31,7 @@ public class Player {
     }
 
     public boolean hasCard(Card card) {
-        return cards[0] == card || cards[1] == card;
+        return Arrays.stream(cards).anyMatch(c -> c == card);
     }
 
     public void removeCard(Card card) {
