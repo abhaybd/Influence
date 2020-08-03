@@ -140,27 +140,20 @@ public class WebGame extends Game {
 
     @Override
     protected CounterAction getCounterAction(Action action, Card card, Player player, Player target) {
+        Map<Future<String>,Player> futureMap = new HashMap<>();
+        Map<String,Card> cardMap = new HashMap<>();
         if (action == Action.ForeignAid) {
-            Map<Future<String>,Player> futureMap = new HashMap<>();
             for (Player p : players) {
                 if (p != player) {
                     Future<String> f = getChoiceAsync(player, new String[]{"Block (Duke)", "Pass"}, String.class);
                     futureMap.put(f, p);
                 }
             }
-            Future<String> f = getFirst(futureMap.keySet(), s -> !s.equalsIgnoreCase("pass"));
-            if (f != null) {
-                return new CounterAction(true, futureMap.get(f), Card.Duke);
-            } else {
-                return null;
-            }
         } else {
             if (card == null) {
                 return null;
             }
 
-            Map<Future<String>,Player> futureMap = new HashMap<>();
-            Map<String,Card> cardMap = new HashMap<>();
             List<String> choices = new ArrayList<>();
             for (Card c : action.blockedBy) {
                 String s = String.format("Block (%s)", c);
@@ -178,19 +171,22 @@ public class WebGame extends Game {
                     futureMap.put(f, p);
                 }
             }
-            Future<String> f = getFirst(futureMap.keySet(), s-> !s.equalsIgnoreCase("pass"));
-            if (f != null) {
-                try {
-                    String choice = f.get();
-                    Card c = cardMap.get(choice);
-                    return new CounterAction(c != null, futureMap.get(f), c);
-                } catch (InterruptedException | ExecutionException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                return null;
+        }
+        Future<String> f = getFirst(futureMap.keySet(), s-> !s.equalsIgnoreCase("pass"));
+        for (Map.Entry<Future<String>,Player> entry : futureMap.entrySet()) {
+            endpointMap.get(futureMap.get(entry.getKey())).write(gson.toJson(new Message("stopChoice")));
+        }
+        if (f != null) {
+            try {
+                String choice = f.get();
+                Card c = cardMap.get(choice);
+                return new CounterAction(c != null, futureMap.get(f), c);
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
             }
         }
+
+        return null;
     }
 
     @Override
