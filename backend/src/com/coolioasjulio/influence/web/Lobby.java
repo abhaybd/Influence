@@ -55,6 +55,7 @@ public class Lobby {
     }
 
     public void addPlayer(PlayerEndpoint player) {
+        System.out.printf("Player %s connected to lobby %s!\n", player.getName(), code);
         players.add(player);
         String list = new Gson().toJson(players.stream().map(PlayerEndpoint::getName).toArray(String[]::new));
         players.forEach(p -> p.write(list));
@@ -62,6 +63,7 @@ public class Lobby {
 
     public void removePlayer(PlayerEndpoint player) {
         if (players.remove(player)) {
+            System.out.printf("Player %s disconnected from lobby %s!\n", player.getName(), code);
             String list = new Gson().toJson(players.stream().map(PlayerEndpoint::getName).toArray(String[]::new));
             players.forEach(p -> p.write(list));
         }

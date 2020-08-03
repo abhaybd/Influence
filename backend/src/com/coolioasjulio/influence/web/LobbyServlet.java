@@ -19,6 +19,7 @@ public class LobbyServlet extends HttpServlet {
         } else {
             Lobby lobby = Lobby.create();
             resp.getWriter().println(lobby.getCode());
+            System.out.println("Created lobby: " + lobby.getCode());
         }
     }
 }

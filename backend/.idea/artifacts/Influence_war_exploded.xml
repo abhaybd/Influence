@@ -7,6 +7,9 @@
         <element id="directory" name="classes">
           <element id="module-output" name="Influence" />
         </element>
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="gson-2.8.6" />
+        </element>
       </element>
     </root>
   </artifact>
