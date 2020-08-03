@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="Influence:war">
+    <output-path>$PROJECT_DIR$/out/artifacts/Influence_war</output-path>
+    <root id="archive" name="ROOT.war">
+      <element id="artifact" artifact-name="Influence:war_exploded" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/web/WEB-INF/META-INF/MANIFEST.MF" />
+      </element>
+    </root>
+  </artifact>
+</component>
