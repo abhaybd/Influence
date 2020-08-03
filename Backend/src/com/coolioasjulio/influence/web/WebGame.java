@@ -8,14 +8,16 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 
 public class WebGame extends Game {
-    private Map<Player,PlayerEndpoint> endpointMap;
-    private ExecutorService executorService;
-    private Gson gson;
+    private final Map<Player,PlayerEndpoint> endpointMap;
+    private final ExecutorService executorService;
+    private final Gson gson;
 
     public static void main(String[] args) {
         Message message = new Message("info");
@@ -46,6 +48,30 @@ public class WebGame extends Game {
         for (PlayerEndpoint endpoint : endpointMap.values()) {
             endpoint.write(json);
         }
+    }
+
+    private <T> Future<T> getFirst(Collection<Future<T>> futures, Predicate<T> predicate) {
+        while (!Thread.interrupted() && !futures.isEmpty()) {
+            List<Future<T>> toRemove = new LinkedList<>();
+            for (Future<T> future : futures) {
+                if (future.isDone()) {
+                    try {
+                        if (predicate.test(future.get())) {
+                            return future;
+                        } else {
+                            toRemove.add(future);
+                        }
+                    } catch (InterruptedException e) {
+                        return null;
+                    } catch (ExecutionException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+            futures.removeAll(toRemove);
+            Thread.yield();
+        }
+        return null;
     }
 
     private <T> Future<T> getChoiceAsync(Player player, T[] choices, Class<T> clazz) {
@@ -114,19 +140,55 @@ public class WebGame extends Game {
 
     @Override
     protected CounterAction getCounterAction(Action action, Card card, Player player, Player target) {
-        CounterAction counterAction = new CounterAction();
         if (action == Action.ForeignAid) {
-
+            Map<Future<String>,Player> futureMap = new HashMap<>();
+            for (Player p : players) {
+                if (p != player) {
+                    Future<String> f = getChoiceAsync(player, new String[]{"Block (Duke)", "Pass"}, String.class);
+                    futureMap.put(f, p);
+                }
+            }
+            Future<String> f = getFirst(futureMap.keySet(), s -> !s.equalsIgnoreCase("pass"));
+            if (f != null) {
+                return new CounterAction(true, futureMap.get(f), Card.Duke);
+            } else {
+                return null;
+            }
         } else {
             if (card == null) {
                 return null;
             }
 
-            if (action.blockedBy.isEmpty()) {
-                counterAction.isBlock = false;
-                // get challenges
+            Map<Future<String>,Player> futureMap = new HashMap<>();
+            Map<String,Card> cardMap = new HashMap<>();
+            List<String> choices = new ArrayList<>();
+            for (Card c : action.blockedBy) {
+                String s = String.format("Block (%s)", c);
+                choices.add(s);
+                cardMap.put(s, c);
+            }
+            choices.add("Challenge");
+            choices.add("Pass");
+            for (Player p : players) {
+                if (p != player && p != target) {
+                    Future<String> f = getChoiceAsync(player, new String[]{"Challenge", "Pass"}, String.class);
+                    futureMap.put(f, p);
+                } else if (p == target) {
+                    Future<String> f = getChoiceAsync(player, choices.toArray(new String[0]), String.class);
+                    futureMap.put(f, p);
+                }
+            }
+            Future<String> f = getFirst(futureMap.keySet(), s-> !s.equalsIgnoreCase("pass"));
+            if (f != null) {
+                try {
+                    String choice = f.get();
+                    Card c = cardMap.get(choice);
+                    return new CounterAction(c != null, futureMap.get(f), c);
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
             } else {
-                // get challenges and blocks
+                return null;
             }
         }
     }
