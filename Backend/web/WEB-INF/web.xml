@@ -10,6 +10,6 @@
     
     <servlet-mapping>
         <servlet-name>Lobby</servlet-name>
-        <url-pattern>*.html</url-pattern>
+        <url-pattern>/create</url-pattern>
     </servlet-mapping>
 </web-app>
