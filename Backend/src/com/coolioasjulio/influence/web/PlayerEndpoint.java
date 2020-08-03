@@ -1,10 +1,6 @@
 package com.coolioasjulio.influence.web;
 
-import javax.websocket.OnClose;
-import javax.websocket.OnError;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
+import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
@@ -15,24 +11,31 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class PlayerEndpoint {
     private Session session;
     private String name;
-    private BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
+    private Lobby lobby;
 
     @OnOpen
     public void onOpen(Session session, @PathParam("code") String code, @PathParam("name") String name) throws IOException {
         this.session = session;
         this.name = name;
-        // TODO: join the appropriate lobby using the code
+        lobby = Lobby.getLobby(code);
+        if (lobby != null) {
+            lobby.addPlayer(this);
+        } else {
+            session.close();
+        }
     }
 
     @OnClose
     public void onClose(Session session) throws IOException {
-        // TODO: tell the lobby that this player disconnected
+        if (lobby != null) {
+            lobby.removePlayer(this);
+        }
     }
 
     @OnMessage
     public void onMessage(String message) {
         messageQueue.add(message);
-        // TODO: parse the message and take action
     }
 
     @OnError

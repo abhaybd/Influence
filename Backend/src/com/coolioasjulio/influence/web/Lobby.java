@@ -1,5 +1,7 @@
 package com.coolioasjulio.influence.web;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -54,10 +56,30 @@ public class Lobby {
 
     public void addPlayer(PlayerEndpoint player) {
         players.add(player);
+        String list = new Gson().toJson(players.stream().map(PlayerEndpoint::getName).toArray(String[]::new));
+        players.forEach(p -> p.write(list));
+    }
+
+    public void removePlayer(PlayerEndpoint player) {
+        if (players.remove(player)) {
+            String list = new Gson().toJson(players.stream().map(PlayerEndpoint::getName).toArray(String[]::new));
+            players.forEach(p -> p.write(list));
+        }
     }
 
     public void startGame() {
+        players.forEach(p -> p.write("Start"));
         lobbyMap.remove(code);
-        // TODO: start the game
+        while (!Thread.interrupted()) {
+            PlayerEndpoint[] players = this.players.toArray(new PlayerEndpoint[0]);
+            for (int i = 0; i < players.length; i++) {
+                int index = ThreadLocalRandom.current().nextInt(players.length);
+                PlayerEndpoint temp = players[i];
+                players[i] = players[index];
+                players[index] = temp;
+            }
+            WebGame game = new WebGame(players);
+            game.playGame();
+        }
     }
 }
