@@ -145,7 +145,7 @@ public class WebGame extends Game {
         if (action == Action.ForeignAid) {
             for (Player p : players) {
                 if (p != player) {
-                    Future<String> f = getChoiceAsync(player, new String[]{"Block (Duke)", "Pass"}, String.class);
+                    Future<String> f = getChoiceAsync(p, new String[]{"Block (Duke)", "Pass"}, String.class);
                     futureMap.put(f, p);
                 }
             }
@@ -164,10 +164,10 @@ public class WebGame extends Game {
             choices.add("Pass");
             for (Player p : players) {
                 if (p != player && p != target) {
-                    Future<String> f = getChoiceAsync(player, new String[]{"Challenge", "Pass"}, String.class);
+                    Future<String> f = getChoiceAsync(p, new String[]{"Challenge", "Pass"}, String.class);
                     futureMap.put(f, p);
                 } else if (p == target) {
-                    Future<String> f = getChoiceAsync(player, choices.toArray(new String[0]), String.class);
+                    Future<String> f = getChoiceAsync(p, choices.toArray(new String[0]), String.class);
                     futureMap.put(f, p);
                 }
             }
