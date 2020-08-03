@@ -1,4 +1,5 @@
 import React from "react";
+import {lobby} from "./App";
 
 class JoinForm extends React.Component {
     constructor(props) {
@@ -21,7 +22,9 @@ class JoinForm extends React.Component {
 
     handleSubmit(event) {
         event.preventDefault();
-
+        this.props.store.code = this.state.code;
+        this.props.store.name = this.state.name;
+        lobby();
     }
 
     render() {

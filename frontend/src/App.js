@@ -4,13 +4,23 @@ import './App.css';
 import JoinForm from "./JoinForm";
 import CreateForm from "./CreateForm";
 
+class Store {
+    constructor(data={}) {
+        Object.assign(this, data);
+    }
+}
+
+let lobbyInfo = new Store({name:"", code:""});
+let socket;
+let started = false;
+
 function create() {
     const elem = <div className="App">
         <header className="App-header">
             <h1>
                 Influence
             </h1>
-            <CreateForm/>
+            <CreateForm store={lobbyInfo}/>
         </header>
     </div>;
     ReactDOM.render(elem, document.getElementById("root"));
@@ -22,14 +32,71 @@ function join() {
             <h1>
                 Influence
             </h1>
-            <JoinForm />
+            <JoinForm store={lobbyInfo}/>
         </header>
     </div>;
     ReactDOM.render(elem, document.getElementById("root"));
 }
 
-function lobby() {
+function onmessage(event) {
+    console.log(event.data);
+    if (!started) {
+        let players = JSON.parse(event.data);
+        const elem = <div className="App">
+            <header className="App-header">
+                <div id="centered"><Lobby players={players} /></div>
 
+            </header>
+        </div>;
+        ReactDOM.render(elem, document.getElementById("root"));
+    }
+}
+
+function lobby() {
+    let loc = window.location, new_uri;
+    if (loc.protocol === "https:") {
+        new_uri = "wss:";
+    } else {
+        new_uri = "ws:";
+    }
+    new_uri += "//" + loc.host;
+    new_uri = "ws://localhost:8080/Influence_war_exploded/join";
+    new_uri += "/" + lobbyInfo.code + "/" + lobbyInfo.name;
+    console.log(new_uri);
+    socket = new WebSocket(new_uri);
+    socket.onmessage = onmessage;
+    socket.onopen = function (event) {
+        console.debug("Opened!");
+    }
+
+    const elem = <div className="App">
+        <header className="App-header">
+            <div id="centered"><Lobby players={[]} /></div>
+
+        </header>
+    </div>;
+    ReactDOM.render(elem, document.getElementById("root"));
+}
+
+function Lobby(props) {
+    const Row = ({player}) => (
+        <tr>
+            <td>{player}</td>
+        </tr>
+    );
+
+    return (
+        <table>
+            <tbody>
+            {props.players.map(player => (<Row player={player} />))}
+            <tr>
+                <td>
+                    <button type="button">Start</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    );
 }
 
 function Buttons() {
@@ -65,3 +132,4 @@ function App() {
 }
 
 export default App;
+export {lobby};
