@@ -44,7 +44,7 @@ function onmessage(event) {
         let players = JSON.parse(event.data);
         const elem = <div className="App">
             <header className="App-header">
-                <div id="centered"><Lobby players={players} /></div>
+                <div id="centered"><Lobby players={players} code={lobbyInfo.code}/></div>
 
             </header>
         </div>;
@@ -53,14 +53,14 @@ function onmessage(event) {
 }
 
 function lobby() {
-    let loc = window.location, new_uri;
-    if (loc.protocol === "https:") {
-        new_uri = "wss:";
-    } else {
-        new_uri = "ws:";
-    }
-    new_uri += "//" + loc.host;
-    new_uri = "ws://localhost:8080/Influence_war_exploded/join";
+    // let loc = window.location, new_uri;
+    // if (loc.protocol === "https:") {
+    //     new_uri = "wss:";
+    // } else {
+    //     new_uri = "ws:";
+    // }
+    // new_uri += "//" + loc.host;
+    let new_uri = "ws://localhost:8080/Influence_war_exploded/join";
     new_uri += "/" + lobbyInfo.code + "/" + lobbyInfo.name;
     console.log(new_uri);
     socket = new WebSocket(new_uri);
@@ -71,7 +71,7 @@ function lobby() {
 
     const elem = <div className="App">
         <header className="App-header">
-            <div id="centered"><Lobby players={[]} /></div>
+            <div id="centered"><Lobby players={[]} code={lobbyInfo.code}/></div>
 
         </header>
     </div>;
@@ -85,6 +85,8 @@ function Lobby(props) {
         </tr>
     );
 
+    console.log(props);
+
     return (
         <table>
             <tbody>
@@ -92,6 +94,11 @@ function Lobby(props) {
             <tr>
                 <td>
                     <button type="button">Start</button>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Code: {props.code}
                 </td>
             </tr>
             </tbody>
