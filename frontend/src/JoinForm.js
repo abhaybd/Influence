@@ -30,7 +30,7 @@ class JoinForm extends React.Component {
     render() {
         return (
             <form onSubmit={this.handleSubmit}>
-                <table>
+                <table className="formtable">
                     <tbody>
                     <tr>
                         <td>

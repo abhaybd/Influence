@@ -1,5 +1,6 @@
 import React from "react";
-import {lobby} from "./App";
+import {lobby, main} from "./App";
+import {ReactComponent as BackIcon} from './back.svg';
 
 class CreateForm extends React.Component {
     constructor(props) {
@@ -36,8 +37,13 @@ class CreateForm extends React.Component {
     render() {
         return (
             <form onSubmit={this.handleSubmit}>
-                <table>
+                <table className="formtable">
                     <tbody>
+                    <tr>
+                        <td>
+                            <BackIcon id="back" onclick={main}/>
+                        </td>
+                    </tr>
                     <tr>
                         <td>
                             Name:

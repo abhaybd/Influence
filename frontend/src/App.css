@@ -40,6 +40,7 @@ input[type=submit] {
   font-size: 1.1em;
   padding: 0.5em 0.5em;
   border-radius: 0px;
+  margin: 0.7em 0 -1em 0;
 }
 
 input[type=submit]:hover {
@@ -56,6 +57,19 @@ input[type=submit]:hover {
 
 .App-link {
   color: #61dafb;
+}
+
+#back {
+  align-self: baseline;
+  margin-top: -1em;
+  margin-bottom: 1em;
+  float: left;
+}
+
+.formtable{
+  background-color: #eeeeee;
+  color: #282c34;
+  padding: 1.5em 1em 1.5em 1em;
 }
 
 .buttons {

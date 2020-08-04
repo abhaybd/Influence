@@ -125,6 +125,18 @@ function Buttons() {
     );
 }
 
+function main() {
+    const elem = <div className="App">
+        <header className="App-header">
+            <h1>
+                Influence
+            </h1>
+            <Buttons/>
+        </header>
+    </div>;
+    ReactDOM.render(elem, document.getElementById("root"));
+}
+
 function App() {
     return (
         <div className="App">
@@ -139,4 +151,4 @@ function App() {
 }
 
 export default App;
-export {lobby};
+export {lobby, main};
