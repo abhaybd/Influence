@@ -7,11 +7,24 @@ import java.io.IOException;
 
 public class LobbyServlet extends HttpServlet {
     @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String code = req.getParameter("code");
+        if (code != null) {
+            Lobby lobby = Lobby.getLobby(code);
+            resp.setStatus(200);
+            resp.getWriter().println(lobby != null && lobby.isStarted());
+            resp.flushBuffer();
+        } else {
+            resp.sendError(400);
+        }
+    }
+
+    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (req.getParameter("start") != null) {
             String code = req.getParameter("code");
             Lobby lobby = Lobby.getLobby(code);
-            if (lobby != null) {
+            if (lobby != null && !lobby.isStarted()) {
                 lobby.startGame();
             } else {
                 resp.sendError(422);
