@@ -3,6 +3,8 @@ import ReactDOM from "react-dom";
 import "./App.css";
 import JoinForm from "./JoinForm";
 import CreateForm from "./CreateForm";
+import Lobby from "./Lobby";
+import Game from "./Game";
 
 class Store {
     constructor(data = {}) {
@@ -54,14 +56,19 @@ function join() {
 function onmessage(event) {
     console.log(event.data);
     if (!started) {
-        let players = JSON.parse(event.data);
-        const elem = <div className="App">
-            <header className="App-header">
-                <div id="centered"><Lobby players={players} code={lobbyInfo.code}/></div>
+        if (event.data === "Start") {
+            started = true;
+            onStart();
+        } else {
+            let players = JSON.parse(event.data);
+            const elem = <div className="App">
+                <header className="App-header">
+                    <div id="centered"><Lobby players={players} code={lobbyInfo.code} start={start}/></div>
 
-            </header>
-        </div>;
-        ReactDOM.render(elem, document.getElementById("root"));
+                </header>
+            </div>;
+            ReactDOM.render(elem, document.getElementById("root"));
+        }
     }
 }
 
@@ -85,39 +92,23 @@ function lobby() {
 
     const elem = <div className="App">
         <header className="App-header">
-            <div id="centered"><Lobby players={[]} code={lobbyInfo.code}/></div>
+            <div id="centered"><Lobby players={[]} code={lobbyInfo.code} start={start}/></div>
 
         </header>
     </div>;
     ReactDOM.render(elem, document.getElementById("root"));
 }
 
-function Lobby(props) {
-    const Row = ({player}) => (
-        <tr>
-            <td>{player}</td>
-        </tr>
-    );
+function onStart() {
+    const elem = <header className="App-header">
+        <Game socket={socket} players={[]}/>
+    </header>
+    ReactDOM.render(elem, document.getElementById("root"));
+}
 
-    console.log(props);
-
-    return (
-        <table>
-            <tbody>
-            {props.players.map((player,i) => (<Row player={player} key={i}/>))}
-            <tr>
-                <td>
-                    <button type="button">Start</button>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    Code: {props.code}
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    );
+function start() {
+    console.log("Starting!");
+    getInfo("start", lobbyInfo.code, () => {});
 }
 
 function Buttons() {

@@ -33,13 +33,13 @@ public class LobbyServlet extends HttpServlet {
                         httpResp.sendError(400, "Invalid request type");
                         break;
                 }
+                httpResp.setStatus(200);
                 if (response != null) {
-                    String json = gson.toJson(response);
-                    httpResp.setStatus(200);
                     httpResp.setContentType("application/json");
+                    String json = gson.toJson(response);
                     httpResp.getWriter().print(json);
-                    httpResp.getWriter().flush();
                 }
+                httpResp.getWriter().flush();
             } else {
                 httpResp.sendError(400, "Requests must define a type key");
             }

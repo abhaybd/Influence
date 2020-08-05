@@ -20,11 +20,12 @@ public class WebGame extends Game {
     private final Gson gson;
 
     public static void main(String[] args) {
-        Message message = new Message("info");
+        Message message = new Message("update");
         Gson gson = new Gson();
         Player[] players = new Player[3];
         players[0] = new Player("Joe", Card.Duke, Card.Ambassador);
         players[1] = new Player("Bob", Card.Duke, Card.Ambassador);
+        players[2] = new Player("Carol", Card.Captain, null);
         message.content = gson.toJsonTree(players);
         System.out.println(gson.toJson(message));
 
@@ -95,7 +96,7 @@ public class WebGame extends Game {
 
     @Override
     protected void update() {
-        broadcast("update", players);
+        broadcast("update", Arrays.stream(players).filter(Objects::nonNull).toArray(Player[]::new));
     }
 
     @Override
@@ -106,6 +107,7 @@ public class WebGame extends Game {
     @Override
     protected Player getTarget(Player player) {
         List<Player> options = new ArrayList<>(Arrays.asList(players));
+        options.removeIf(Objects::isNull);
         options.remove(player);
 
         return getChoice(player, options.toArray(new Player[0]), Player.class);

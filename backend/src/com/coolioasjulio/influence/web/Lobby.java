@@ -102,6 +102,7 @@ public class Lobby {
         synchronized (playersLock) {
             if (players.size() > 2 && started.getAndSet(true)) return;
         }
+        System.out.println("Starting lobby: " + code);
         players.forEach(p -> p.write("Start"));
         lobbyMap.remove(code);
         while (!Thread.interrupted()) {

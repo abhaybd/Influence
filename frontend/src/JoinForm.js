@@ -25,11 +25,12 @@ class JoinForm extends React.Component {
         event.preventDefault();
         let name = this.state.name;
         let code = this.state.code;
+        let props = this.props;
         if (code.length > 0 && name.length > 0) {
             getInfo("exists", code, function(data) {
                 if (data.content) {
-                    this.props.store.code = code;
-                    this.props.store.name = name;
+                    props.store.code = code;
+                    props.store.name = name;
                     lobby();
                 } else {
                     alert("Invalid room code!");
@@ -46,7 +47,6 @@ class JoinForm extends React.Component {
                     <tr>
                         <td>
                             <button id="back"><BackIcon onClick={main}/></button>
-
                         </td>
                     </tr>
                     <tr>

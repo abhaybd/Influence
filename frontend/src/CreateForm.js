@@ -46,7 +46,6 @@ class CreateForm extends React.Component {
                     <tr>
                         <td>
                             <button id="back"><BackIcon onClick={main}/></button>
-
                         </td>
                     </tr>
                     <tr>
