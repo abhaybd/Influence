@@ -5,12 +5,12 @@ import JoinForm from "./JoinForm";
 import CreateForm from "./CreateForm";
 
 class Store {
-    constructor(data={}) {
+    constructor(data = {}) {
         Object.assign(this, data);
     }
 }
 
-let lobbyInfo = new Store({name:"", code:""});
+let lobbyInfo = new Store({name: "", code: ""});
 let socket;
 let started = false;
 
@@ -53,20 +53,21 @@ function onmessage(event) {
 }
 
 function lobby() {
-    // let loc = window.location, new_uri;
-    // if (loc.protocol === "https:") {
-    //     new_uri = "wss:";
-    // } else {
-    //     new_uri = "ws:";
-    // }
-    // new_uri += "//" + loc.host;
-    let new_uri = "ws://localhost:8080/Influence_war_exploded/join";
-    new_uri += "/" + lobbyInfo.code + "/" + lobbyInfo.name;
+    let loc = window.location;
+    let new_uri = loc.protocol === "https:" ? "wss:" : "ws:";
+    new_uri += "//" + loc.host;
+    new_uri += "/join/" + lobbyInfo.code + "/" + lobbyInfo.name;
+    new_uri = new_uri.replace("3000", "8080");
     console.log(new_uri);
     socket = new WebSocket(new_uri);
     socket.onmessage = onmessage;
     socket.onopen = function (event) {
         console.debug("Opened!");
+    }
+
+    socket.onclose = function (event) {
+        console.debug(event);
+        alert("The server disconnected unexpectedly!");
     }
 
     const elem = <div className="App">
@@ -90,7 +91,7 @@ function Lobby(props) {
     return (
         <table>
             <tbody>
-            {props.players.map(player => (<Row player={player} />))}
+            {props.players.map((player,i) => (<Row player={player} key={i}/>))}
             <tr>
                 <td>
                     <button type="button">Start</button>
@@ -131,7 +132,7 @@ function main() {
             <h1>
                 Influence
             </h1>
-            <Buttons />
+            <Buttons/>
         </header>
     </div>;
     ReactDOM.render(elem, document.getElementById("root"));

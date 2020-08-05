@@ -118,6 +118,12 @@ public class Lobby {
         }
     }
 
+    public int numPlayers() {
+        synchronized (playersLock) {
+            return players.size();
+        }
+    }
+
     public boolean isStarted() {
         return started.get();
     }

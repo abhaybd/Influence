@@ -16,13 +16,14 @@ public class PlayerEndpoint {
 
     @OnOpen
     public void onOpen(Session session, @PathParam("code") String code, @PathParam("name") String name) throws IOException {
+        System.out.println("Websocket from " + name);
         this.session = session;
         this.name = name;
         lobby = Lobby.getLobby(code);
         if (lobby != null) {
             lobby.addPlayer(this);
         } else {
-            session.close();
+            session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Invalid lobby code!"));
         }
     }
 

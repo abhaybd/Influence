@@ -18,18 +18,20 @@ class CreateForm extends React.Component {
 
     handleSubmit(event) {
         event.preventDefault();
-        if (this.state.length > 0) {
+        if (this.state.name.length > 0) {
             this.props.store.name = this.state.name;
-            const Http = new XMLHttpRequest();
-            const url = '/Influence_war_exploded/create';
-            Http.open("POST", url);
+            const url = '/lobby';
 
-            Http.send();
+            const http = new XMLHttpRequest();
+            http.open("POST", url);
+            http.setRequestHeader('Content-type', 'application/json');
+            http.send(JSON.stringify({action:"create"}));
+
             let props = this.props;
-            Http.onreadystatechange = function() {
+            http.onreadystatechange = function() {
                 if (this.readyState === 4 && this.status === 200) {
-                    console.log(Http.responseText);
-                    props.store.code = Http.responseText;
+                    console.log(http.responseText);
+                    props.store.code = JSON.parse(http.responseText).code;
                     lobby();
                 }
             }
