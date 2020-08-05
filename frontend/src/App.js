@@ -16,9 +16,7 @@ let started = false;
 
 function getInfo(info, code, callback) {
     const http = new XMLHttpRequest();
-    const params = Object.entries({info:code, code:code}).map(k => k[0] + "=" + k[1]).join("&");
-    console.log(params);
-    http.open("GET", "http://localhost:8080/lobby?" + params);
+    http.open("POST", "/lobby");
     http.setRequestHeader("Content-type", "application/json");
     http.onreadystatechange = function() {
         if (http.readyState === 4 && http.status === 200) {
@@ -26,7 +24,7 @@ function getInfo(info, code, callback) {
         }
     }
 
-    http.send();
+    http.send(JSON.stringify({type:info, code:code}));
 }
 
 function create() {

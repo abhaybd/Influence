@@ -25,13 +25,13 @@ class CreateForm extends React.Component {
             const http = new XMLHttpRequest();
             http.open("POST", url);
             http.setRequestHeader('Content-type', 'application/json');
-            http.send(JSON.stringify({action:"create"}));
+            http.send(JSON.stringify({type:"create"}));
 
             let props = this.props;
             http.onreadystatechange = function() {
                 if (this.readyState === 4 && this.status === 200) {
                     console.log(http.responseText);
-                    props.store.code = JSON.parse(http.responseText).code;
+                    props.store.code = JSON.parse(http.responseText).content;
                     lobby();
                 }
             }

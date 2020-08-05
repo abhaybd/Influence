@@ -32,7 +32,7 @@ class JoinForm extends React.Component {
                     this.props.store.name = name;
                     lobby();
                 } else {
-                    alert("Invalid room code!")
+                    alert("Invalid room code!");
                 }
             });
         }
