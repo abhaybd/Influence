@@ -131,7 +131,7 @@ function main() {
             <h1>
                 Influence
             </h1>
-            <Buttons/>
+            <Buttons />
         </header>
     </div>;
     ReactDOM.render(elem, document.getElementById("root"));

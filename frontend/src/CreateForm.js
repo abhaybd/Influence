@@ -18,18 +18,20 @@ class CreateForm extends React.Component {
 
     handleSubmit(event) {
         event.preventDefault();
-        this.props.store.name = this.state.name;
-        const Http = new XMLHttpRequest();
-        const url = '/Influence_war_exploded/create';
-        Http.open("POST", url);
+        if (this.state.length > 0) {
+            this.props.store.name = this.state.name;
+            const Http = new XMLHttpRequest();
+            const url = '/Influence_war_exploded/create';
+            Http.open("POST", url);
 
-        Http.send();
-        let props = this.props;
-        Http.onreadystatechange = function() {
-            if (this.readyState === 4 && this.status === 200) {
-                console.log(Http.responseText);
-                props.store.code = Http.responseText;
-                lobby();
+            Http.send();
+            let props = this.props;
+            Http.onreadystatechange = function() {
+                if (this.readyState === 4 && this.status === 200) {
+                    console.log(Http.responseText);
+                    props.store.code = Http.responseText;
+                    lobby();
+                }
             }
         }
     }
@@ -41,7 +43,8 @@ class CreateForm extends React.Component {
                     <tbody>
                     <tr>
                         <td>
-                            <BackIcon id="back" onclick={main}/>
+                            <button id="back"><BackIcon onClick={main}/></button>
+
                         </td>
                     </tr>
                     <tr>

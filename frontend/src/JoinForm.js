@@ -1,5 +1,6 @@
 import React from "react";
-import {lobby} from "./App";
+import {lobby, main} from "./App";
+import {ReactComponent as BackIcon} from "./back.svg";
 
 class JoinForm extends React.Component {
     constructor(props) {
@@ -22,9 +23,11 @@ class JoinForm extends React.Component {
 
     handleSubmit(event) {
         event.preventDefault();
-        this.props.store.code = this.state.code;
-        this.props.store.name = this.state.name;
-        lobby();
+        if (this.state.code.length > 0 && this.state.name.length > 0) {
+            this.props.store.code = this.state.code;
+            this.props.store.name = this.state.name;
+            lobby();
+        }
     }
 
     render() {
@@ -32,6 +35,12 @@ class JoinForm extends React.Component {
             <form onSubmit={this.handleSubmit}>
                 <table className="formtable">
                     <tbody>
+                    <tr>
+                        <td>
+                            <button id="back"><BackIcon onClick={main}/></button>
+
+                        </td>
+                    </tr>
                     <tr>
                         <td>
                             Name:
