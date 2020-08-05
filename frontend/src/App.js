@@ -1,6 +1,6 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './App.css';
+import React from "react";
+import ReactDOM from "react-dom";
+import "./App.css";
 import JoinForm from "./JoinForm";
 import CreateForm from "./CreateForm";
 
@@ -13,6 +13,21 @@ class Store {
 let lobbyInfo = new Store({name: "", code: ""});
 let socket;
 let started = false;
+
+function getInfo(info, code, callback) {
+    const http = new XMLHttpRequest();
+    const params = Object.entries({info:code, code:code}).map(k => k[0] + "=" + k[1]).join("&");
+    console.log(params);
+    http.open("GET", "http://localhost:8080/lobby?" + params);
+    http.setRequestHeader("Content-type", "application/json");
+    http.onreadystatechange = function() {
+        if (http.readyState === 4 && http.status === 200) {
+            callback(JSON.parse(http.responseText));
+        }
+    }
+
+    http.send();
+}
 
 function create() {
     const elem = <div className="App">
@@ -152,4 +167,4 @@ function App() {
 }
 
 export default App;
-export {lobby, main};
+export {lobby, main, getInfo};

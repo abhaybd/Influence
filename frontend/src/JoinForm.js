@@ -1,5 +1,5 @@
 import React from "react";
-import {lobby, main} from "./App";
+import {getInfo, lobby, main} from "./App";
 import {ReactComponent as BackIcon} from "./back.svg";
 
 class JoinForm extends React.Component {
@@ -23,10 +23,18 @@ class JoinForm extends React.Component {
 
     handleSubmit(event) {
         event.preventDefault();
-        if (this.state.code.length > 0 && this.state.name.length > 0) {
-            this.props.store.code = this.state.code;
-            this.props.store.name = this.state.name;
-            lobby();
+        let name = this.state.name;
+        let code = this.state.code;
+        if (code.length > 0 && name.length > 0) {
+            getInfo("exists", code, function(data) {
+                if (data.content) {
+                    this.props.store.code = code;
+                    this.props.store.name = name;
+                    lobby();
+                } else {
+                    alert("Invalid room code!")
+                }
+            });
         }
     }
 
