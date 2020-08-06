@@ -101,7 +101,7 @@ function lobby() {
 
 function onStart() {
     const elem = <header className="App-header">
-        <Game socket={socket} players={[]}/>
+        <Game socket={socket} players={[]} localPlayer={lobbyInfo.name} />
     </header>
     ReactDOM.render(elem, document.getElementById("root"));
 }
@@ -117,12 +117,12 @@ function Buttons() {
             <tbody>
             <tr>
                 <td>
-                    <button type="button" onClick={create}>Create</button>
+                    <button type="button" className="form-button" onClick={create}>Create</button>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <button type="button" onClick={join}>Join</button>
+                    <button type="button" className="form-button" onClick={join}>Join</button>
                 </td>
             </tr>
             </tbody>

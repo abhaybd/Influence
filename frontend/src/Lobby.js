@@ -15,7 +15,7 @@ export default function Lobby(props) {
             {props.players.map((player, i) => (<Row player={player} key={i}/>))}
             <tr>
                 <td>
-                    <button type="button" onClick={props.start}>Start</button>
+                    <button type="button" className="form-button" onClick={props.start}>Start</button>
                 </td>
             </tr>
             <tr>

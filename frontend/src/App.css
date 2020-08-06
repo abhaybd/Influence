@@ -13,7 +13,7 @@
   color: white;
 }
 
-#game-container {
+.game-container {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -23,6 +23,12 @@
 .player-icon {
   margin: 1em 1em 1em 1em;
   text-align: center;
+}
+
+.local-player-icon {
+  margin: 1em 1em 1em 1em;
+  text-align: center;
+  border: double white;
 }
 
 input[type=text] {
@@ -72,6 +78,16 @@ input[type=submit]:hover {
   cursor: pointer;
 }
 
+.game-button {
+  background: none;
+  border: white;
+  border-radius: 10px;
+  color: #fff;
+  font-family: 'TitilliumText22LRegular', Arial, sans-serif;
+  font-size: 0.7em;
+  cursor: pointer;
+}
+
 .formtable{
   background-color: #eeeeee;
   color: #282c34;
@@ -96,11 +112,8 @@ h1 {
   padding: 2em 0 3em 0;
 }
 
-button {
+.form-button {
   flex: 1;
-}
-
-button {
   border: none;
   padding: 0.5em;
   background: #00abc6;
@@ -111,6 +124,6 @@ button {
   border-radius: 0px;
 }
 
-button:hover {
+.form-button:hover {
   background: #61dafb;
 }
