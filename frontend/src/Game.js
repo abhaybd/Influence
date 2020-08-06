@@ -5,7 +5,7 @@ export default class Game extends React.Component {
         super(props);
         this.socket = props.socket;
         this.localPlayerName = props.localPlayer;
-        this.state = {players: props.players, choices:[]}
+        this.state = {players: props.players, choices:[], message:""}
 
         this.onmessage = this.onmessage.bind(this);
         this.getLocalPlayer = this.getLocalPlayer.bind(this);
@@ -27,11 +27,11 @@ export default class Game extends React.Component {
                 break;
 
             case "choice":
-                this.setState({choices:data.content});
+                this.setState({choices:data.content, message:data.message});
                 break;
 
             case "stopChoice":
-                this.setState({choices:[]});
+                this.setState({choices:[], message:"Waiting for others..."});
                 break;
 
             default:
@@ -60,7 +60,7 @@ export default class Game extends React.Component {
     }
 
     onChoice(choice) {
-        this.setState({choices:[]});
+        this.setState({choices:[], message:"Waiting for others..."});
         this.socket.send(JSON.stringify(choice));
     }
 
@@ -88,7 +88,10 @@ export default class Game extends React.Component {
                                                               influence={this.numInfluence(player.cards)}/>)}
                 </div>
                 <div className="game-container">
-                    {this.getLocalPlayer().cards.map(card => card === null ? null : <div className="player-icon">{card}</div>)}
+                    {this.getLocalPlayer().cards.map(card => card === null ? null : <div className="card-names">{card}</div>)}
+                </div>
+                <div className="game-container">
+                    {this.state.message}
                 </div>
                 <div className="game-container">
                     {this.state.choices.map((choice,i) => <Choice key={i} choice={choice} />)}

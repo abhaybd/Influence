@@ -25,6 +25,12 @@
   text-align: center;
 }
 
+.card-names {
+  margin: 1em 1em 1em 1em;
+  text-align: center;
+  font-size: 0.8em;
+}
+
 .local-player-icon {
   margin: 1em 1em 1em 1em;
   text-align: center;

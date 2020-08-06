@@ -75,14 +75,18 @@ public class WebGame extends Game {
         return null;
     }
 
-    private <T> Future<T> getChoiceAsync(Player player, T[] choices) {
-        return executorService.submit(() -> getChoice(player, choices));
+    private String sanitize(String s) {
+        return s.replaceAll("(?<=[a-z])(?=[A-Z])", " ").toLowerCase();
     }
 
-    private <T> T getChoice(Player player, T[] choices) {
+    private <T> Future<T> getChoiceAsync(Player player, T[] choices, String prompt) {
+        return executorService.submit(() -> getChoice(player, choices, prompt));
+    }
+
+    private <T> T getChoice(Player player, T[] choices, String prompt) {
         String[] choicesStr = Arrays.stream(choices).map(Object::toString).toArray(String[]::new);
         PlayerEndpoint endpoint = endpointMap.get(player);
-        Message message = new Message("choice");
+        Message message = new Message("choice", prompt);
         message.content = gson.toJsonTree(choicesStr);
         String json = gson.toJson(message);
         endpoint.write(json);
@@ -115,7 +119,7 @@ public class WebGame extends Game {
         options.removeIf(Objects::isNull);
         options.remove(player);
 
-        return getChoice(player, options.toArray(new Player[0]));
+        return getChoice(player, options.toArray(new Player[0]), "Choose a target");
     }
 
     @Override
@@ -129,7 +133,7 @@ public class WebGame extends Game {
         options.add(Action.Exchange);
         options.add(Action.Steal);
 
-        return getChoice(player, options.toArray(new Action[0]));
+        return getChoice(player, options.toArray(new Action[0]), "Choose an action");
     }
 
     @Override
@@ -138,7 +142,7 @@ public class WebGame extends Game {
         Card[] ret = new Card[influence];
         List<Card> cardList = new ArrayList<>(Arrays.asList(cards));
         for (int i = 0; i < ret.length; i++) {
-            ret[i] = getChoice(player, cardList.toArray(new Card[0]));
+            ret[i] = getChoice(player, cardList.toArray(new Card[0]), "Choose a card to keep");
             cardList.remove(ret[i]);
         }
 
@@ -147,20 +151,28 @@ public class WebGame extends Game {
 
     @Override
     protected CounterAction getCounterAction(Action action, Card card, Player player, Player target) {
+        if (action != Action.ForeignAid && card == null) {
+            return null;
+        }
+
         Map<Future<String>,Player> futureMap = new HashMap<>();
         Map<String,Card> cardMap = new HashMap<>();
+        String message;
+        if (card != null) {
+            message = String.format("%s is claiming to have a %s in order to %s", player, card, sanitize(action.name()));
+            if (target != null) message += " from " + target;
+        } else {
+            message = String.format("%s is trying to do %s", player, sanitize(action.name()));
+        }
+
         if (action == Action.ForeignAid) {
             for (Player p : players) {
                 if (p != player) {
-                    Future<String> f = getChoiceAsync(p, new String[]{"Block (Duke)", "Pass"});
+                    Future<String> f = getChoiceAsync(p, new String[]{"Block (Duke)", "Pass"}, message);
                     futureMap.put(f, p);
                 }
             }
         } else {
-            if (card == null) {
-                return null;
-            }
-
             List<String> choices = new ArrayList<>();
             for (Card c : action.blockedBy) {
                 String s = String.format("Block (%s)", c);
@@ -171,10 +183,10 @@ public class WebGame extends Game {
             choices.add("Pass");
             for (Player p : players) {
                 if (p != player && p != target) {
-                    Future<String> f = getChoiceAsync(p, new String[]{"Challenge", "Pass"});
+                    Future<String> f = getChoiceAsync(p, new String[]{"Challenge", "Pass"}, message);
                     futureMap.put(f, p);
                 } else if (p == target) {
-                    Future<String> f = getChoiceAsync(p, choices.toArray(new String[0]));
+                    Future<String> f = getChoiceAsync(p, choices.toArray(new String[0]), message);
                     futureMap.put(f, p);
                 }
             }
@@ -200,15 +212,21 @@ public class WebGame extends Game {
     protected Card getCardToSacrifice(Player player) {
         Card[] hand = new Card[player.getInfluence()];
         System.arraycopy(player.getCards(), 0, hand, 0, hand.length);
-        return getChoice(player, hand);
+        return getChoice(player, hand, "Choose a card to sacrifice");
     }
 
     private static class Message {
         public String type;
+        public String message;
         public JsonElement content;
 
         public Message(String type) {
             this.type = type;
+        }
+
+        public Message(String type, String message) {
+            this.type = type;
+            this.message = message;
         }
     }
 }
