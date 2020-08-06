@@ -62,6 +62,7 @@ public class Lobby {
     private final Object playersLock = new Object();
     private final AtomicBoolean started;
     private volatile WebGame game;
+    private Thread gameThread;
 
     private Lobby(String code) {
         this.code = code;
@@ -105,13 +106,27 @@ public class Lobby {
             if (players.isEmpty()) {
                 System.out.printf("Lobby %s terminated.\n", code);
                 lobbyMap.remove(code);
+                if (gameThread != null) {
+                    gameThread.interrupt();
+                }
             }
         }
     }
 
-    public void startGame() {
+    public boolean startGameAsync() {
         synchronized (playersLock) {
-            if (players.size() < 2 || started.getAndSet(true)) return;
+            if (players.size() < 2 || started.getAndSet(true)) return false;
+            gameThread = new Thread(() -> startGame(false));
+            gameThread.start();
+            return true;
+        }
+    }
+
+    public void startGame(boolean checkPreconditions) {
+        if (checkPreconditions) {
+            synchronized (playersLock) {
+                if (players.size() < 2 || started.getAndSet(true)) return;
+            }
         }
         System.out.println("Starting lobby: " + code);
         players.forEach(p -> p.write("Start"));
@@ -128,6 +143,7 @@ public class Lobby {
             game = new WebGame(players);
             game.playGame();
         }
+        System.out.printf("Thread for lobby %s terminated!\n", code);
     }
 
     public int numPlayers() {

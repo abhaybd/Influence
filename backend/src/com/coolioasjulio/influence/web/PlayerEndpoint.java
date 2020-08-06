@@ -50,12 +50,8 @@ public class PlayerEndpoint {
         session.close();
     }
 
-    public String readLine() {
-        try {
-            return messageQueue.take();
-        } catch (InterruptedException e) {
-            return null;
-        }
+    public String readLine() throws InterruptedException {
+        return messageQueue.take();
     }
 
     public synchronized void write(String message) {

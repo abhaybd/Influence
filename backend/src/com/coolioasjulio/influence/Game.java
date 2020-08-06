@@ -32,55 +32,61 @@ public abstract class Game {
      * Plays a full game. Blocks until the game is complete.
      */
     public void playGame() {
-        int playerIndex = 0;
-        update();
-        while (playersAlive() > 1) {
-            Player player = players[playerIndex];
-            Action action = getAction(player);
-            // If this action has a target, prompt frontend for the target
-            Player target = action.targeted ? getTarget(player) : null;
-            if (target != null) {
-                if (action.card != null) {
-                    log("%s uses a(n) %s to do %s on %s", player, action.card, action, target);
-                } else {
-                    log("%s does %s on %s", player, action, target);
-                }
-            } else {
-                if (action.card != null) {
-                    log("%s uses a(n) %s to do %s", player, action.card, action);
-                } else {
-                    log("%s does %s", player, action);
-                }
-            }
-            // Execute this action, which may have a target
-            doAction(action, player, target);
-
-            // Mark all players with 0 influence as dead
-            for (int i = 0; i < players.length; i++) {
-                if (players[i].getInfluence() == 0) {
-                    playerDied(players[i]);
-                    players[i] = null;
-                }
-            }
-
-            // Update the frontend to reflect the new state
+        try {
+            int playerIndex = 0;
             update();
 
-            // Advance the playerIndex to point to the next player that's alive (looping over from the end back to the start)
-            do {
-                playerIndex = (playerIndex + 1) % players.length;
-            } while (players[playerIndex] == null);
-        }
+            while (playersAlive() > 1) {
+                Player player = players[playerIndex];
+                Action action = getAction(player);
+                // If this action has a target, prompt frontend for the target
+                Player target = action.targeted ? getTarget(player) : null;
+                if (target != null) {
+                    if (action.card != null) {
+                        log("%s uses a(n) %s to do %s on %s", player, action.card, action, target);
+                    } else {
+                        log("%s does %s on %s", player, action, target);
+                    }
+                } else {
+                    if (action.card != null) {
+                        log("%s uses a(n) %s to do %s", player, action.card, action);
+                    } else {
+                        log("%s does %s", player, action);
+                    }
+                }
+                // Execute this action, which may have a target
+                doAction(action, player, target);
 
-        // The only remaining player is the winner
-        playerWon(Arrays.stream(players).filter(Objects::nonNull).findFirst().orElseThrow(IllegalStateException::new));
+                // Mark all players with 0 influence as dead
+                for (int i = 0; i < players.length; i++) {
+                    if (players[i].getInfluence() == 0) {
+                        playerDied(players[i]);
+                        players[i] = null;
+                    }
+                }
+
+                // Update the frontend to reflect the new state
+                update();
+
+                // Advance the playerIndex to point to the next player that's alive (looping over from the end back to the start)
+                do {
+                    playerIndex = (playerIndex + 1) % players.length;
+                } while (players[playerIndex] == null);
+            }
+
+            // The only remaining player is the winner
+            playerWon(Arrays.stream(players).filter(Objects::nonNull).findFirst().orElseThrow(IllegalStateException::new));
+        } catch (InterruptedException e) {
+            // Re-interrupt the thread to signal callers that this game was interrupted
+            Thread.currentThread().interrupt();
+        }
     }
 
-    private boolean doAction(Action action, Player player, Player target) {
+    private boolean doAction(Action action, Player player, Player target) throws InterruptedException {
         return doAction(action, action.card, player, target);
     }
 
-    private boolean doAction(Action action, Card card, Player player, Player target) {
+    private boolean doAction(Action action, Card card, Player player, Player target) throws InterruptedException {
         // Pay the cost of the action first
         handleActionCost(action, player);
 
@@ -142,7 +148,7 @@ public abstract class Game {
         }
     }
 
-    private void handleAction(Action action, Player player, Player target) {
+    private void handleAction(Action action, Player player, Player target) throws InterruptedException {
         // These are implemented according to the rules
         switch (action) {
             case Income:
@@ -175,7 +181,7 @@ public abstract class Game {
         }
     }
 
-    private void exchange(Player player) {
+    private void exchange(Player player) throws InterruptedException {
         // If the player has 1 influence, they can select from 3 cards. If 2, they can select from 4 cards.
         int influence = player.getInfluence();
         Card[] available = new Card[influence + 2];
@@ -218,7 +224,7 @@ public abstract class Game {
         }
     }
 
-    private void sacrificeCard(Player player) {
+    private void sacrificeCard(Player player) throws InterruptedException {
         Card card = getCardToSacrifice(player);
         log("%s sacrifices a %s", player, card);
         player.removeCard(card);
@@ -253,7 +259,7 @@ public abstract class Game {
      * @param player The player doing the targeted action.
      * @return The player being targeted by this action.
      */
-    protected abstract Player getTarget(Player player);
+    protected abstract Player getTarget(Player player) throws InterruptedException;
 
     /**
      * Get an action to do.
@@ -261,7 +267,7 @@ public abstract class Game {
      * @param player The player doing this action.
      * @return The Action this player is doing this turn.
      */
-    protected abstract Action getAction(Player player);
+    protected abstract Action getAction(Player player) throws InterruptedException;
 
     /**
      * Do an exchange action.
@@ -270,7 +276,7 @@ public abstract class Game {
      * @param cards  The cards to choose from.
      * @return The cards to keep. The player can only keep as many cards as it has influence.
      */
-    protected abstract Card[] doExchange(Player player, Card[] cards);
+    protected abstract Card[] doExchange(Player player, Card[] cards) throws InterruptedException;
 
     /**
      * Prompt the appropriate players for a counter action, either a block or a challenge.
@@ -282,7 +288,7 @@ public abstract class Game {
      * @param target The target of the action. If the action is not targeted, this will be null.
      * @return The counter action done against this action. If no counter action is done, return null.
      */
-    protected abstract CounterAction getCounterAction(Action action, Card card, Player player, Player target);
+    protected abstract CounterAction getCounterAction(Action action, Card card, Player player, Player target) throws InterruptedException;
 
     /**
      * Get a card to sacrifice from the hand of this player.
@@ -290,7 +296,7 @@ public abstract class Game {
      * @param player The player that must sacrifice a card.
      * @return A card from the hand of the supplied player.
      */
-    protected abstract Card getCardToSacrifice(Player player);
+    protected abstract Card getCardToSacrifice(Player player) throws InterruptedException;
 
     protected static class CounterAction {
         /**

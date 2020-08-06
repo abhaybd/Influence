@@ -70,7 +70,9 @@ public class LobbyServlet extends HttpServlet {
                 // Start an existing lobby
                 lobby = Lobby.getLobby(code);
                 if (lobby != null && !lobby.isStarted()) {
-                    lobby.startGame();
+                    if (!lobby.startGameAsync()) {
+                        httpResp.sendError(422, "The game may have been already started, or not enough players in the lobby");
+                    }
                 } else {
                     httpResp.sendError(422);
                 }

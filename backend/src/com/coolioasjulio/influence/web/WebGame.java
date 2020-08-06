@@ -53,7 +53,7 @@ public class WebGame extends Game {
         }
     }
 
-    private <T> Future<T> getFirst(Collection<Future<T>> futures, Predicate<T> predicate) {
+    private <T> Future<T> getFirst(Collection<Future<T>> futures, Predicate<T> predicate) throws InterruptedException {
         while (!Thread.interrupted() && !futures.isEmpty()) {
             List<Future<T>> toRemove = new LinkedList<>();
             for (Future<T> future : futures) {
@@ -64,8 +64,6 @@ public class WebGame extends Game {
                         } else {
                             toRemove.add(future);
                         }
-                    } catch (InterruptedException e) {
-                        return null;
                     } catch (ExecutionException e) {
                         throw new RuntimeException(e);
                     }
@@ -85,7 +83,7 @@ public class WebGame extends Game {
         return executorService.submit(() -> getChoice(player, choices, prompt));
     }
 
-    private <T> T getChoice(Player player, T[] choices, String prompt) {
+    private <T> T getChoice(Player player, T[] choices, String prompt) throws InterruptedException {
         String[] choicesStr = Arrays.stream(choices).map(Object::toString).toArray(String[]::new);
         PlayerEndpoint endpoint = endpointMap.get(player);
         Message message = new Message("choice", prompt);
@@ -121,7 +119,7 @@ public class WebGame extends Game {
     }
 
     @Override
-    protected Player getTarget(Player player) {
+    protected Player getTarget(Player player) throws InterruptedException {
         List<Player> options = new ArrayList<>(Arrays.asList(players));
         options.removeIf(Objects::isNull);
         options.remove(player);
@@ -130,7 +128,7 @@ public class WebGame extends Game {
     }
 
     @Override
-    protected Action getAction(Player player) {
+    protected Action getAction(Player player) throws InterruptedException {
         List<Action> options = new ArrayList<>();
         options.add(Action.Income);
         options.add(Action.ForeignAid);
@@ -144,7 +142,7 @@ public class WebGame extends Game {
     }
 
     @Override
-    protected Card[] doExchange(Player player, Card[] cards) {
+    protected Card[] doExchange(Player player, Card[] cards) throws InterruptedException {
         int influence = player.getInfluence();
         Card[] ret = new Card[influence];
         List<Card> cardList = new ArrayList<>(Arrays.asList(cards));
@@ -157,7 +155,7 @@ public class WebGame extends Game {
     }
 
     @Override
-    protected CounterAction getCounterAction(Action action, Card card, Player player, Player target) {
+    protected CounterAction getCounterAction(Action action, Card card, Player player, Player target) throws InterruptedException {
         if (action != Action.ForeignAid && card == null) {
             return null;
         }
@@ -215,7 +213,7 @@ public class WebGame extends Game {
     }
 
     @Override
-    protected Card getCardToSacrifice(Player player) {
+    protected Card getCardToSacrifice(Player player) throws InterruptedException {
         Card[] hand = new Card[player.getInfluence()];
         System.arraycopy(player.getCards(), 0, hand, 0, hand.length);
         return getChoice(player, hand, "Choose a card to sacrifice");
