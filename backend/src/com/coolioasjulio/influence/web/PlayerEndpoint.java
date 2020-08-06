@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-@ServerEndpoint(value="/join/{code}/{name}")
+@ServerEndpoint(value = "/join/{code}/{name}")
 public class PlayerEndpoint {
     private Session session;
     private String name;
@@ -21,7 +21,9 @@ public class PlayerEndpoint {
         this.name = name;
         lobby = Lobby.getLobby(code);
         if (lobby != null) {
-            lobby.addPlayer(this);
+            if (!lobby.addPlayer(this)) {
+                session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Invalid lobby or name already taken!"));
+            }
         } else {
             session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Invalid lobby code!"));
         }

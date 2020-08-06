@@ -72,13 +72,19 @@ public class Lobby {
         return code;
     }
 
-    public void addPlayer(PlayerEndpoint player) {
+    public boolean addPlayer(PlayerEndpoint player) {
         synchronized (playersLock) {
             if (!started.get()) {
+                if (players.stream().anyMatch(p -> p.getName().equals(player.getName()))) {
+                    return false;
+                }
                 System.out.printf("Player %s connected to lobby %s!\n", player.getName(), code);
                 players.add(player);
                 String list = new Gson().toJson(players.stream().map(PlayerEndpoint::getName).toArray(String[]::new));
                 players.forEach(p -> p.write(list));
+                return true;
+            } else {
+                return false;
             }
         }
     }

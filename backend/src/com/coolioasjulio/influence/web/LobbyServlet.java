@@ -78,7 +78,7 @@ public class LobbyServlet extends HttpServlet {
         Response<?> response = null;
         if (info != null && code != null) {
             Lobby lobby = Lobby.getLobby(code);
-            switch (info.toLowerCase()) {
+            switch (info) {
                 case "started":
                     response = new Response<>(lobby != null && lobby.isStarted());
                     break;

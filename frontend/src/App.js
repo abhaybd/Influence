@@ -16,7 +16,7 @@ let lobbyInfo = new Store({name: "", code: ""});
 let socket;
 let started = false;
 
-function getInfo(info, code, callback) {
+function doPost(type, code, callback) {
     const http = new XMLHttpRequest();
     http.open("POST", "/lobby");
     http.setRequestHeader("Content-type", "application/json");
@@ -26,7 +26,9 @@ function getInfo(info, code, callback) {
         }
     }
 
-    http.send(JSON.stringify({type:info, code:code}));
+    let body = JSON.stringify({type:type, code:code});
+    console.log(body)
+    http.send(body);
 }
 
 function create() {
@@ -107,8 +109,12 @@ function onStart() {
 }
 
 function start() {
-    console.log("Starting!");
-    getInfo("start", lobbyInfo.code, () => {});
+    doPost("numPlayers", lobbyInfo.code, function(data) {
+        if (data.content >= 2) {
+            console.log("Starting!");
+            doPost("start", lobbyInfo.code, () => {});
+        }
+    });
 }
 
 function Buttons() {
@@ -156,4 +162,4 @@ function App() {
 }
 
 export default App;
-export {lobby, main, getInfo};
+export {lobby, main, doPost};

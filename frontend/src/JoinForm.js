@@ -1,5 +1,5 @@
 import React from "react";
-import {getInfo, lobby, main} from "./App";
+import {doPost, lobby, main} from "./App";
 import {ReactComponent as BackIcon} from "./back.svg";
 
 class JoinForm extends React.Component {
@@ -27,7 +27,7 @@ class JoinForm extends React.Component {
         let code = this.state.code;
         let props = this.props;
         if (code.length > 0 && name.length > 0) {
-            getInfo("exists", code, function(data) {
+            doPost("exists", code, function(data) {
                 if (data.content) {
                     props.store.code = code;
                     props.store.name = name;
