@@ -77,7 +77,8 @@ function onmessage(event) {
 function lobby() {
     let loc = window.location;
     let new_uri = loc.protocol === "https:" ? "wss:" : "ws:";
-    new_uri += "//" + loc.host;
+    new_uri += "//" + loc.host.replace("3000", "8080");
+    if (!new_uri.endsWith(":8080")) new_uri += ":8080"
     new_uri += "/join/" + lobbyInfo.code + "/" + lobbyInfo.name;
     new_uri = new_uri.replace("3000", "8080");
     console.log(new_uri);
