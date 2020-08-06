@@ -68,6 +68,9 @@ public abstract class Game {
     }
 
     private boolean doAction(Action action, Card card, Player player, Player target) {
+        // Pay the cost of the action first
+        handleActionCost(action, player);
+
         CounterAction counterAction = getCounterAction(action, card, player, target);
         if (counterAction != null) {
             if (counterAction.isBlock) {
@@ -96,6 +99,27 @@ public abstract class Game {
             }
         }
 
+        // Handle the results of the action
+        handleAction(action, player, target);
+
+        return true;
+    }
+
+    private void handleActionCost(Action action, Player player) {
+        // Deduct the appropriate amount from the player
+        // We can assume the player has enough money
+        switch (action) {
+            case Assassinate:
+                player.coins -= 3;
+                break;
+
+            case Coup:
+                player.coins -= 7;
+                break;
+        }
+    }
+
+    private void handleAction(Action action, Player player, Player target) {
         // These are implemented according to the rules
         switch (action) {
             case Income:
@@ -111,12 +135,7 @@ public abstract class Game {
                 break;
 
             case Assassinate:
-                player.coins -= 3;
-                sacrificeCard(target);
-                break;
-
             case Coup:
-                player.coins -= 7;
                 sacrificeCard(target);
                 break;
 
@@ -131,8 +150,6 @@ public abstract class Game {
                 player.coins += removed;
                 break;
         }
-
-        return true;
     }
 
     private void exchange(Player player) {
