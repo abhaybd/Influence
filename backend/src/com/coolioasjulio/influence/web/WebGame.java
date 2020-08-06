@@ -19,27 +19,29 @@ public class WebGame extends Game {
     private final ExecutorService executorService;
     private final Gson gson;
 
-    public static void main(String[] args) {
-        Message message = new Message("update");
-        Gson gson = new Gson();
-        Player[] players = new Player[3];
-        players[0] = new Player("Joe", Card.Duke, Card.Ambassador);
-        players[1] = new Player("Bob", Card.Duke, Card.Ambassador);
-        players[2] = new Player("Carol", Card.Captain, null);
-        message.content = gson.toJsonTree(players);
-        System.out.println(gson.toJson(message));
-
-    }
-
     public WebGame(PlayerEndpoint[] endpoints) {
         super(Arrays.stream(endpoints).map(PlayerEndpoint::getName).toArray(String[]::new));
-        endpointMap = new HashMap<>();
+        endpointMap = Collections.synchronizedMap(new HashMap<>());
         for (int i = 0; i < players.length; i++) {
             endpointMap.put(players[i], endpoints[i]);
         }
 
         gson = new Gson();
         executorService = Executors.newFixedThreadPool(8);
+    }
+
+    public void onPlayerDisconnected(PlayerEndpoint player) {
+        Player toRemove = null;
+        for (Map.Entry<Player, PlayerEndpoint> entry : endpointMap.entrySet()) {
+            if (player == entry.getValue()) {
+                toRemove = entry.getKey();
+                break;
+            }
+        }
+        if (toRemove != null) {
+            endpointMap.remove(toRemove);
+        }
+        log("%s disconnected from the game! Please start a new game.", player.getName());
     }
 
     private void broadcast(String type, Object content) {

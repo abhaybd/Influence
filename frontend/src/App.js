@@ -27,7 +27,6 @@ function doPost(type, code, callback) {
     }
 
     let body = JSON.stringify({type:type, code:code});
-    console.log(body)
     http.send(body);
 }
 
@@ -87,11 +86,11 @@ function lobby() {
     socket = new WebSocket(new_uri);
     socket.onmessage = onmessage;
     socket.onopen = function (event) {
-        console.debug("Opened!");
+        console.log("Opened!");
     }
 
     socket.onclose = function (event) {
-        console.debug(event);
+        console.log(event);
         alert("The server disconnected unexpectedly!");
     }
 

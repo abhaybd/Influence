@@ -61,6 +61,7 @@ public class Lobby {
     private final List<PlayerEndpoint> players;
     private final Object playersLock = new Object();
     private final AtomicBoolean started;
+    private volatile WebGame game;
 
     private Lobby(String code) {
         this.code = code;
@@ -93,8 +94,12 @@ public class Lobby {
         synchronized (playersLock) {
             if (players.remove(player)) {
                 System.out.printf("Player %s disconnected from lobby %s!\n", player.getName(), code);
-                String list = new Gson().toJson(players.stream().map(PlayerEndpoint::getName).toArray(String[]::new));
-                players.forEach(p -> p.write(list));
+                if (started.get() && game != null) {
+                    game.onPlayerDisconnected(player);
+                } else {
+                    String list = new Gson().toJson(players.stream().map(PlayerEndpoint::getName).toArray(String[]::new));
+                    players.forEach(p -> p.write(list));
+                }
             }
 
             if (players.isEmpty()) {
@@ -106,7 +111,7 @@ public class Lobby {
 
     public void startGame() {
         synchronized (playersLock) {
-            if (players.size() > 2 && started.getAndSet(true)) return;
+            if (players.size() < 2 || started.getAndSet(true)) return;
         }
         System.out.println("Starting lobby: " + code);
         players.forEach(p -> p.write("Start"));
@@ -120,7 +125,7 @@ public class Lobby {
                 players[i] = players[index];
                 players[index] = temp;
             }
-            WebGame game = new WebGame(players);
+            game = new WebGame(players);
             game.playGame();
         }
     }

@@ -17,7 +17,6 @@ export default class Game extends React.Component {
 
     onmessage(event) {
         let json = event.data;
-        console.log(json);
         let data = JSON.parse(json);
         switch (data.type) {
             case "update":
@@ -46,7 +45,7 @@ export default class Game extends React.Component {
                 break;
 
             default:
-                console.warn("Unrecognized type " + data.type);
+                console.warn("Unrecognized data " + data.toString());
                 break;
         }
     }

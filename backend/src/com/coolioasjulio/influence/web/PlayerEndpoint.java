@@ -46,6 +46,10 @@ public class PlayerEndpoint {
         // TODO: not gonna lie, no idea what to do here
     }
 
+    public synchronized void close() throws IOException {
+        session.close();
+    }
+
     public String readLine() {
         try {
             return messageQueue.take();
@@ -54,7 +58,7 @@ public class PlayerEndpoint {
         }
     }
 
-    public void write(String message) {
+    public synchronized void write(String message) {
         try {
             session.getBasicRemote().sendText(message);
         } catch (IOException e) {

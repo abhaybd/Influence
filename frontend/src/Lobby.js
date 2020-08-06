@@ -7,8 +7,6 @@ export default function Lobby(props) {
         </tr>
     );
 
-    console.log(props);
-
     return (
         <table>
             <tbody>
