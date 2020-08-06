@@ -39,6 +39,7 @@ function create() {
             </h1>
             <CreateForm store={lobbyInfo}/>
         </header>
+        <div id="footer">Made by Abhay Deshpande</div>
     </div>;
     ReactDOM.render(elem, document.getElementById("root"));
 }
@@ -51,6 +52,7 @@ function join() {
             </h1>
             <JoinForm store={lobbyInfo}/>
         </header>
+        <div id="footer">Made by Abhay Deshpande</div>
     </div>;
     ReactDOM.render(elem, document.getElementById("root"));
 }
@@ -66,8 +68,8 @@ function onmessage(event) {
             const elem = <div className="App">
                 <header className="App-header">
                     <div id="centered"><Lobby players={players} code={lobbyInfo.code} start={start}/></div>
-
                 </header>
+                <div id="footer">Made by Abhay Deshpande</div>
             </div>;
             ReactDOM.render(elem, document.getElementById("root"));
         }
@@ -96,8 +98,8 @@ function lobby() {
     const elem = <div className="App">
         <header className="App-header">
             <div id="centered"><Lobby players={[]} code={lobbyInfo.code} start={start}/></div>
-
         </header>
+        <div id="footer">Made by Abhay Deshpande</div>
     </div>;
     ReactDOM.render(elem, document.getElementById("root"));
 }
@@ -145,6 +147,7 @@ function main() {
             </h1>
             <Buttons/>
         </header>
+        <div id="footer">Made by Abhay Deshpande</div>
     </div>;
     ReactDOM.render(elem, document.getElementById("root"));
 }
@@ -158,6 +161,7 @@ function App() {
                 </h1>
                 <Buttons/>
             </header>
+            <div id="footer">Made by Abhay Deshpande</div>
         </div>
     );
 }

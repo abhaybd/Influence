@@ -90,6 +90,16 @@ input[type=submit]:hover {
   cursor: pointer;
 }
 
+#footer {
+  text-align: center;
+  font-size: 0.6em;
+  position: fixed;
+  bottom: 0;
+  color: white;
+  left: 0;
+  right: 0;
+}
+
 .game-button {
   background: none;
   border: white;

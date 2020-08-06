@@ -11,6 +11,8 @@ export default class Game extends React.Component {
         this.getLocalPlayer = this.getLocalPlayer.bind(this);
 
         this.socket.onmessage = this.onmessage;
+
+        window.onbeforeunload = () => true; // block refreshes
     }
 
     onmessage(event) {
