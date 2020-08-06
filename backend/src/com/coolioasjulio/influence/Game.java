@@ -4,8 +4,8 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public abstract class Game {
-    protected Player[] players;
-    private List<Card> deck;
+    protected final Player[] players;
+    private final List<Card> deck;
 
     public Game(String[] names) {
         if (names.length < 2 || names.length > 6) throw new IllegalArgumentException("There must be 2-6 players!");
@@ -209,6 +209,7 @@ public abstract class Game {
     }
 
     private void shuffleDeck() {
+        // Iterate through the deck, randomly swapping each element
         for (int i = 0; i < deck.size(); i++) {
             int swap = ThreadLocalRandom.current().nextInt(deck.size());
             Card temp = deck.get(i);
@@ -271,6 +272,16 @@ public abstract class Game {
      */
     protected abstract Card[] doExchange(Player player, Card[] cards);
 
+    /**
+     * Prompt the appropriate players for a counter action, either a block or a challenge.
+     * It may be possible that no counter action is possible.
+     *
+     * @param action The action being done, against which a counter action may be done.
+     * @param card   The card being used to do said action. Use this instead of <code>action.card</code>
+     * @param player The player doing the action.
+     * @param target The target of the action. If the action is not targeted, this will be null.
+     * @return The counter action done against this action. If no counter action is done, return null.
+     */
     protected abstract CounterAction getCounterAction(Action action, Card card, Player player, Player target);
 
     /**
@@ -282,8 +293,19 @@ public abstract class Game {
     protected abstract Card getCardToSacrifice(Player player);
 
     protected static class CounterAction {
+        /**
+         * If true, this counter action is a block. Otherwise, it's a challenge.
+         * If this action is a block, {@link CounterAction#card} is guaranteed to be non-null.
+         */
         public boolean isBlock;
+        /**
+         * The player performing this counter action.
+         */
         public Player player;
+        /**
+         * The card being used to perform this counter action.
+         * Only non-null if this counter action is a block.
+         */
         public Card card;
 
         public CounterAction(boolean isBlock, Player player, Card card) {

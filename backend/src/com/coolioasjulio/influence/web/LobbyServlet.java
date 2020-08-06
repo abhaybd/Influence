@@ -10,13 +10,17 @@ import java.io.IOException;
 public class LobbyServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest httpReq, HttpServletResponse httpResp) throws IOException {
+        // Only json requests are accepted
         if ("application/json".equalsIgnoreCase(httpReq.getContentType())) {
+            // Parse the json request
             Gson gson = new Gson();
             ActionReq actionReq = gson.fromJson(httpReq.getReader(), ActionReq.class);
             String type = actionReq.type;
+            // All requests must define a request type
             if (type != null) {
                 String code = actionReq.code;
                 Response<?> response = null;
+                // Depending on the request type, it's either an info request or an action request
                 switch (type) {
                     case "started":
                     case "exists":
@@ -34,11 +38,14 @@ public class LobbyServlet extends HttpServlet {
                         break;
                 }
                 httpResp.setStatus(200);
+                // If we got a response object, send it now
+                // If an error was reported, this will no-op
                 if (response != null) {
                     httpResp.setContentType("application/json");
                     String json = gson.toJson(response);
                     httpResp.getWriter().print(json);
                 }
+                // Send the status and message body. If there was an error, this will no-op
                 httpResp.getWriter().flush();
             } else {
                 httpResp.sendError(400, "Requests must define a type key");
@@ -53,12 +60,14 @@ public class LobbyServlet extends HttpServlet {
         Lobby lobby;
         switch (action) {
             case "create":
+                // Create a lobby and reply with the lobby code
                 lobby = Lobby.create();
                 response = new Response<>(lobby.getCode());
                 System.out.println("Created lobby: " + lobby.getCode());
                 break;
 
             case "start":
+                // Start an existing lobby
                 lobby = Lobby.getLobby(code);
                 if (lobby != null && !lobby.isStarted()) {
                     lobby.startGame();
@@ -77,6 +86,7 @@ public class LobbyServlet extends HttpServlet {
     private Response<?> processInfo(HttpServletResponse httpResp, String info, String code) throws IOException {
         Response<?> response = null;
         if (info != null && code != null) {
+            // Get the lobby referred to in the request. If this lobby is null, then it doesn't exist.
             Lobby lobby = Lobby.getLobby(code);
             switch (info) {
                 case "started":
