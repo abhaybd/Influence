@@ -72,6 +72,12 @@ input[type=submit]:hover {
   color: #61dafb;
 }
 
+#event-log {
+  position: fixed;
+  left: 20px;
+  font-size: 0.6em;
+}
+
 #back {
   padding: 0 0 0 0;
   align-self: baseline;

@@ -99,6 +99,11 @@ public class WebGame extends Game {
     }
 
     @Override
+    protected void log(String format, Object... args) {
+        broadcast("log", String.format(format, args));
+    }
+
+    @Override
     protected void playerWon(Player player) {
         broadcast("info", String.format("%s wins!", player.getName()));
     }

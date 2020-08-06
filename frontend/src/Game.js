@@ -5,7 +5,7 @@ export default class Game extends React.Component {
         super(props);
         this.socket = props.socket;
         this.localPlayerName = props.localPlayer;
-        this.state = {players: props.players, choices:[], message:""}
+        this.state = {players: props.players, choices:[], message:"", log:["Started game!"]}
 
         this.onmessage = this.onmessage.bind(this);
         this.getLocalPlayer = this.getLocalPlayer.bind(this);
@@ -32,6 +32,15 @@ export default class Game extends React.Component {
 
             case "stopChoice":
                 this.setState({choices:[], message:"Waiting for others..."});
+                break;
+
+            case "log":
+                let log = this.state.log;
+                log.push(data.content);
+                while (log.length > 5) {
+                    log.shift();
+                }
+                this.setState({log:log})
                 break;
 
             default:
@@ -83,6 +92,9 @@ export default class Game extends React.Component {
 
         return (
             <div>
+                <div id="event-log">
+                    {this.state.log.map(line => <div>{line}<br /></div>)}
+                </div>
                 <div className="game-container">
                     {this.state.players.map(player => <Player key={player.name} player={player.name} coins={player.coins}
                                                               influence={this.numInfluence(player.cards)}/>)}

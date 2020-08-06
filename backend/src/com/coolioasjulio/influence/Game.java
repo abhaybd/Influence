@@ -39,6 +39,19 @@ public abstract class Game {
             Action action = getAction(player);
             // If this action has a target, prompt frontend for the target
             Player target = action.targeted ? getTarget(player) : null;
+            if (target != null) {
+                if (action.card != null) {
+                    log("%s uses a(n) %s to do %s on %s", player, action.card, action, target);
+                } else {
+                    log("%s does %s on %s", player, action, target);
+                }
+            } else {
+                if (action.card != null) {
+                    log("%s uses a(n) %s to do %s", player, action.card, action);
+                } else {
+                    log("%s does %s", player, action);
+                }
+            }
             // Execute this action, which may have a target
             doAction(action, player, target);
 
@@ -74,19 +87,26 @@ public abstract class Game {
         CounterAction counterAction = getCounterAction(action, card, player, target);
         if (counterAction != null) {
             if (counterAction.isBlock) {
+                log("%s blocks with a(n) %s", counterAction.player, counterAction.card);
                 // This block can itself be challenged, so we can reuse the doAction() method
                 // block.player refers to the player blocking this action
                 // block.card refers to the card being used by the player to block this action
                 if (doAction(Action.Block, counterAction.card, counterAction.player, player)) {
+                    log("Block succeeded!");
                     return false;
+                } else {
+                    log("Block failed!");
                 }
             } else {
+                log("%s challenges", counterAction.player);
                 // If the action has been challenged, determine if the player was lying
                 boolean lying = !player.hasCard(card);
                 // If the player was lying, they sacrifice a card. Otherwise, the challenger does
                 if (lying) {
+                    log("Challenge succeeded!");
                     sacrificeCard(player);
                 } else {
+                    log("Challenge failed!");
                     sacrificeCard(counterAction.player);
                     // If the player wasn't lying, shuffle their card back into the deck and draw a new one
                     player.removeCard(card);
@@ -196,7 +216,12 @@ public abstract class Game {
 
     private void sacrificeCard(Player player) {
         Card card = getCardToSacrifice(player);
+        log("%s sacrifices a %s", player, card);
         player.removeCard(card);
+    }
+
+    protected void log(String format, Object... args) {
+        System.out.printf(format, args); // Override me to show game events to players
     }
 
     /**
