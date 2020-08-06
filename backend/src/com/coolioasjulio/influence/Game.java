@@ -96,6 +96,9 @@ public abstract class Game {
                     return false;
                 } else {
                     log("Block failed!");
+                    // If the block was challenged and failed, the target may have died
+                    // If that's the case, don't continue with this action
+                    if (target != null && target.getInfluence() == 0) return false;
                 }
             } else {
                 log("%s challenges", counterAction.player);
@@ -221,7 +224,7 @@ public abstract class Game {
     }
 
     protected void log(String format, Object... args) {
-        System.out.printf(format, args); // Override me to show game events to players
+        System.out.printf(format + "\n", args); // Override me to show game events to players
     }
 
     /**
