@@ -58,8 +58,6 @@ export default class Game extends React.Component {
     }
 
     getLocalPlayer() {
-        console.log(this.state.players);
-        console.log(this.localPlayerName);
         for (let player of this.state.players) {
             if (player.name === this.localPlayerName) {
                 return player;

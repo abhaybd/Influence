@@ -50,7 +50,6 @@ public class PlayerEndpoint {
         try {
             return messageQueue.take();
         } catch (InterruptedException e) {
-            e.printStackTrace();
             return null;
         }
     }

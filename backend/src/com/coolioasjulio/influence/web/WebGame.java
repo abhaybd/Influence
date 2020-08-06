@@ -197,9 +197,8 @@ public class WebGame extends Game {
             }
         }
         Future<String> f = getFirst(futureMap.keySet(), s-> !s.equalsIgnoreCase("pass"));
-        for (Map.Entry<Future<String>,Player> entry : futureMap.entrySet()) {
-            endpointMap.get(futureMap.get(entry.getKey())).write(gson.toJson(new Message("stopChoice")));
-        }
+        broadcast("stopChoice", null);
+        futureMap.keySet().forEach(future -> future.cancel(true));
         if (f != null) {
             try {
                 String choice = f.get();
