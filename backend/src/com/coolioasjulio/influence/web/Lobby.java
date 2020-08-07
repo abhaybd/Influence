@@ -177,7 +177,8 @@ public class Lobby {
         }
         System.out.println("Starting lobby: " + code);
         // Write to each player, telling them the game has started
-        players.forEach(p -> p.write("Start"));
+        String message = new Gson().toJson("Start");
+        players.forEach(p -> p.write(message));
         // Remove this lobby from the lobby map
         lobbyMap.remove(code);
         // Play forever until the thread is interrupted

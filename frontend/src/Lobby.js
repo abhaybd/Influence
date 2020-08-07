@@ -13,12 +13,12 @@ export default class Lobby extends React.Component {
 
     onmessage(event) {
         console.log(event.data);
-        if (event.data === "Start") {
+        let data = JSON.parse(event.data);
+        if (data === "Start") {
             this.socket.onmessage = undefined;
             this.props.onStart();
         } else {
-            let players = JSON.parse(event.data);
-            this.setState({players: players});
+            this.setState({players: data});
         }
     }
 
