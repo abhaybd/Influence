@@ -20,17 +20,22 @@ public class PlayerEndpoint {
         this.session = session;
         this.name = name;
         lobby = Lobby.getLobby(code);
+        // Check if the asked for lobby exists
         if (lobby != null) {
+            // Try to add this player to the lobby
             if (!lobby.addPlayer(this)) {
+                // If unsuccessful, close the player session
                 session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Invalid lobby or name already taken!"));
             }
         } else {
+            // If the lobby doesn't exist doesn't, close the session
             session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Invalid lobby code!"));
         }
     }
 
     @OnClose
-    public void onClose(Session session) throws IOException {
+    public void onClose() {
+        // If this player has joined a lobby, signal to the lobby that it disconnected
         if (lobby != null) {
             lobby.removePlayer(this);
         }
@@ -38,6 +43,7 @@ public class PlayerEndpoint {
 
     @OnMessage
     public void onMessage(String message) {
+        // Add this message to the end of the message queue, to be read later
         messageQueue.add(message);
     }
 

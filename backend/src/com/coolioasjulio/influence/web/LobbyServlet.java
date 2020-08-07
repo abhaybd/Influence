@@ -69,11 +69,15 @@ public class LobbyServlet extends HttpServlet {
             case "start":
                 // Start an existing lobby
                 lobby = Lobby.getLobby(code);
+                // If the lobby exists and hasn't started, start it now
                 if (lobby != null && !lobby.isStarted()) {
+                    // Try to start the game on a new thread
                     if (!lobby.startGameAsync()) {
+                        // If the game failed to start, report an error code
                         httpResp.sendError(422, "The game may have been already started, or not enough players in the lobby");
                     }
                 } else {
+                    // Report an error code if the lobby doesn't exist or has already started
                     httpResp.sendError(422);
                 }
                 break;
@@ -92,17 +96,21 @@ public class LobbyServlet extends HttpServlet {
             Lobby lobby = Lobby.getLobby(code);
             switch (info) {
                 case "started":
+                    // Check if the lobby exists and if it has started
                     response = new Response<>(lobby != null && lobby.isStarted());
                     break;
 
                 case "exists":
+                    // Check if the lobby exists
                     response = new Response<>(lobby != null);
                     break;
 
                 case "numPlayers":
+                    // Check if the lobby exists, and if so, how many players
                     if (lobby != null) {
                         response = new Response<>(lobby.numPlayers());
                     } else {
+                        // Report an error if the lobby doesn't exist
                         httpResp.sendError(422, "Lobby doesn't exist");
                     }
                     break;

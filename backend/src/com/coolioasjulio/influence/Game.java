@@ -230,6 +230,12 @@ public abstract class Game {
         player.removeCard(card);
     }
 
+    /**
+     * Report game events to the players. Override this method to show the messages appropriately.
+     *
+     * @param format A format string
+     * @param args   Arguments referenced by the format string
+     */
     protected void log(String format, Object... args) {
         System.out.printf(format + "\n", args); // Override me to show game events to players
     }
