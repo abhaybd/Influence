@@ -1,5 +1,5 @@
 import React from "react";
-import {doPost, lobby, main} from "./App";
+import {doPost} from "./App";
 import {ReactComponent as BackIcon} from "./back.svg";
 
 class JoinForm extends React.Component {
@@ -31,7 +31,7 @@ class JoinForm extends React.Component {
                 if (data.content) {
                     props.store.code = code;
                     props.store.name = name;
-                    lobby();
+                    props.lobby();
                 } else {
                     alert("Invalid room code!");
                 }
@@ -46,7 +46,7 @@ class JoinForm extends React.Component {
                     <tbody>
                     <tr>
                         <td>
-                            <button id="back"><BackIcon onClick={main}/></button>
+                            <button id="back"><BackIcon onClick={this.props.main}/></button>
                         </td>
                     </tr>
                     <tr>

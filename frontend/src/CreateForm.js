@@ -1,5 +1,4 @@
 import React from "react";
-import {lobby, main} from "./App";
 import {ReactComponent as BackIcon} from './back.svg';
 
 class CreateForm extends React.Component {
@@ -32,7 +31,7 @@ class CreateForm extends React.Component {
                 if (this.readyState === 4 && this.status === 200) {
                     console.log(http.responseText);
                     props.store.code = JSON.parse(http.responseText).content;
-                    lobby();
+                    props.lobby();
                 }
             }
         }
@@ -45,7 +44,7 @@ class CreateForm extends React.Component {
                     <tbody>
                     <tr>
                         <td>
-                            <button id="back"><BackIcon onClick={main}/></button>
+                            <button id="back"><BackIcon onClick={this.props.main}/></button>
                         </td>
                     </tr>
                     <tr>

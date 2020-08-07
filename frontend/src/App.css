@@ -74,7 +74,8 @@ input[type=submit]:hover {
 
 #event-log {
   position: fixed;
-  left: 20px;
+  text-align: left;
+  left: 1ch;
   font-size: 0.6em;
 }
 
