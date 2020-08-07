@@ -195,6 +195,13 @@ public class Lobby {
             game = new WebGame(players);
             game.playGame();
         }
+        for (PlayerEndpoint player : players) {
+            try {
+                player.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         System.out.printf("Thread for lobby %s terminated!\n", code);
     }
 
