@@ -52,7 +52,7 @@ input[type=submit] {
   font-weight:bold;
   font-size: 1.1em;
   padding: 0.5em 0.5em;
-  border-radius: 0px;
+  border-radius: 0;
   margin: 0.7em 0 -1em 0;
 }
 
@@ -110,17 +110,17 @@ input[type=submit]:hover {
   cursor: pointer;
 }
 
-.formtable{
+.form-table{
   background-color: #eeeeee;
   color: #282c34;
   padding: 30px 20px 30px 20px;
-  /*padding: 1.5em 1em 1.5em 1em;*/
 }
 
 .buttons {
   width: 20%;
   table-layout: fixed;
 }
+
 .buttons tr {
   display: flex;
 }
@@ -143,7 +143,7 @@ h1 {
   font-family: 'TitilliumText22LRegular', Arial, sans-serif;
   font-weight:bold;
   font-size: 1.1em;
-  border-radius: 0px;
+  border-radius: 0;
 }
 
 .form-button:hover {

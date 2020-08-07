@@ -41,7 +41,7 @@ class CreateForm extends React.Component {
     render() {
         return (
             <form onSubmit={this.handleSubmit}>
-                <table className="formtable">
+                <table className="form-table">
                     <tbody>
                     <tr>
                         <td>
