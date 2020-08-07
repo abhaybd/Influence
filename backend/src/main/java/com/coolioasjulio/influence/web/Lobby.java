@@ -13,8 +13,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Lobby {
+    public static final int CODE_LEN = 3; // code is made up of these many nouns
     private static final Map<String, Lobby> lobbyMap = new ConcurrentHashMap<>();
-    private static final int CODE_LEN = 3; // code is made up of these many nouns
     private static String[] nouns; // the nouns from which to assemble lobby codes. Will be lazy-loaded from disk.
     private static final Object nounsLock = new Object();
 
@@ -178,7 +178,9 @@ public class Lobby {
         System.out.println("Starting lobby: " + code);
         // Write to each player, telling them the game has started
         String message = new Gson().toJson("Start");
-        players.forEach(p -> p.write(message));
+        synchronized (playersLock) {
+            players.forEach(p -> p.write(message));
+        }
         // Remove this lobby from the lobby map
         lobbyMap.remove(code);
         // Play forever until the thread is interrupted
