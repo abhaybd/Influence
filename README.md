@@ -1,6 +1,6 @@
 # Influence
 
-A clone of the board game coup, available to play [here](influencegame.xyz).
+A clone of the board game coup, available to play [here](http://www.influencegame.xyz).
 
 If you find any bugs, please create an issue!
 
