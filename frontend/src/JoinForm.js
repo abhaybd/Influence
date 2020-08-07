@@ -46,7 +46,7 @@ class JoinForm extends React.Component {
                     <tbody>
                     <tr>
                         <td>
-                            <button id="back"><BackIcon onClick={this.props.main}/></button>
+                            <button id="back" onClick={this.props.main}><BackIcon /></button>
                         </td>
                     </tr>
                     <tr>

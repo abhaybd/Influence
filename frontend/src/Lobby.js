@@ -47,7 +47,6 @@ export default class Lobby extends React.Component {
                     </tr>
                     </tbody>
                 </table>
-                <div id="footer">Made by Abhay Deshpande</div>
             </div>
         );
     }

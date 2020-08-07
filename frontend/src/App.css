@@ -68,6 +68,28 @@ input[type=submit]:hover {
   justify-content: center;
 }
 
+#rules-box {
+  position: absolute;
+  background: #eeeeee;
+  top: 5%;
+  padding: 30px 20px 5px 20px;
+  min-height: 10vh;
+  height: 80%;
+  width: 60%;
+  color: #282c34;
+  font-size: 0.7em;
+  text-align: left;
+  overflow-y: scroll;
+  z-index: 1;
+}
+
+#rules-button {
+  position: absolute;
+  right: 1em;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
 .App-link {
   color: #61dafb;
 }
@@ -93,7 +115,7 @@ input[type=submit]:hover {
 
 #footer {
   text-align: center;
-  font-size: 0.6em;
+  font-size: 0.8em;
   position: fixed;
   bottom: 0;
   color: white;
@@ -149,4 +171,8 @@ h1 {
 
 .form-button:hover {
   background: #61dafb;
+}
+
+a {
+  color: white;
 }

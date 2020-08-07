@@ -4,6 +4,7 @@ import JoinForm from "./JoinForm";
 import CreateForm from "./CreateForm";
 import Lobby from "./Lobby";
 import Game from "./Game";
+import Rules from "./Rules";
 
 function doPost(type, code, callback) {
     const http = new XMLHttpRequest();
@@ -41,7 +42,7 @@ function Buttons(props) {
 class App extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {view: "buttons", showHeader: true}
+        this.state = {view: "buttons", showHeader: true, showRules: false}
         this.store = {};
 
         this.createForm = this.createForm.bind(this);
@@ -50,6 +51,7 @@ class App extends React.Component {
         this.showLobby = this.showLobby.bind(this);
         this.start = this.start.bind(this);
         this.onStart = this.onStart.bind(this);
+        this.toggleRules = this.toggleRules.bind(this);
     }
 
     createForm() {
@@ -61,7 +63,7 @@ class App extends React.Component {
     }
 
     mainScreen() {
-        this.setState({view: "buttons"});
+        this.setState({view: "buttons", showHeader: true});
     }
 
     showLobby() {
@@ -98,21 +100,44 @@ class App extends React.Component {
         this.setState({view:"game"})
     }
 
+    toggleRules() {
+        let rules = this.state.showRules;
+        this.setState({showRules: !rules});
+    }
+
     render() {
-        let content = null;
-        if (this.state.view === "buttons") content = <Buttons createForm={this.createForm} joinForm={this.joinForm}/>
-        else if (this.state.view === "create") content = <CreateForm store={this.store} main={this.mainScreen} lobby={this.showLobby} />
-        else if (this.state.view === "join") content = <JoinForm store={this.store} main={this.mainScreen} lobby={this.showLobby} />
-        else if (this.state.view === "lobby") content =
-            <Lobby socket={this.socket} start={this.start} onStart={this.onStart} code={this.store.code}/>
-        else if (this.state.view === "game") content = <Game players={[]} socket={this.socket} localPlayer={this.store.name} />
+        let content;
+        switch (this.state.view) {
+            case "buttons":
+                content = <Buttons createForm={this.createForm} joinForm={this.joinForm}/>
+                break;
+            case "create":
+                content = <CreateForm store={this.store} main={this.mainScreen} lobby={this.showLobby}/>
+                break;
+            case "join":
+                content = <JoinForm store={this.store} main={this.mainScreen} lobby={this.showLobby}/>
+                break;
+            case "lobby":
+                content =
+                    <Lobby socket={this.socket} start={this.start} onStart={this.onStart} code={this.store.code}/>
+                break;
+            case "game":
+                content = <Game players={[]} socket={this.socket} localPlayer={this.store.name}/>
+                break;
+            default:
+                content = null;
+                console.warn("Invalid state!");
+                break;
+        }
         return (
             <div className="App">
                 <header className="App-header">
+                    {this.state.showRules ? <Rules back={this.toggleRules} /> : null}
+                    <div id="rules-button" onClick={this.toggleRules}><u>{this.state.showRules ? "Hide" : "Show"} Rules</u></div>
                     {this.state.showHeader ? <h1>Influence</h1> : null}
                     {content}
                 </header>
-                <div id="footer">Made by Abhay Deshpande</div>
+                <div id="footer"><a href="https://www.github.com/abhaybd">Made by Abhay Deshpande</a></div>
             </div>
         );
     }
