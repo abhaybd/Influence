@@ -134,7 +134,7 @@ class App extends React.Component {
                 <header className="App-header">
                     {this.state.showRules ? <Rules back={this.toggleRules} /> : null}
                     <div id="rules-button" onClick={this.toggleRules}><u>{this.state.showRules ? "Hide" : "Show"} Rules</u></div>
-                    {this.state.showHeader ? <h1>Influence</h1> : null}
+                    {this.state.showHeader ? <div id="header"><h1>Influence</h1><br/>Clone of Coup</div> : null}
                     {content}
                 </header>
                 <div id="footer"><a href="https://www.github.com/abhaybd">Made by Abhay Deshpande</a></div>
