@@ -6,7 +6,7 @@
 
     <groupId>com.coolioasjulio.influence</groupId>
     <artifactId>Influence</artifactId>
-    <version>0.3.0</version>
+    <version>0.3.1</version>
 
     <properties>
         <maven.compiler.target>1.8</maven.compiler.target>
