@@ -1,7 +1,8 @@
 import React from "react";
 import {ReactComponent as BackIcon} from './back.svg';
-//Create Game
-class CreateForm extends React.Component {
+import {doPost} from "./App";
+//create Game
+export default class CreateForm extends React.Component {
     constructor(props) {
         super(props);
 
@@ -12,28 +13,23 @@ class CreateForm extends React.Component {
     }
 
     handleChange(event) {
+        // Only letters allowed, so replace invalid characters with an empty string
         this.setState({name: event.target.value.replace(/[^A-Za-z]/g, "")});
     }
 
     handleSubmit(event) {
-        event.preventDefault();
+        event.preventDefault(); // override default behavior
+        // Only submit the create request if there is a valid name
         if (this.state.name.length > 0) {
-            this.props.store.name = this.state.name;
-            const url = '/lobby';
-
-            const http = new XMLHttpRequest();
-            http.open("POST", url);
-            http.setRequestHeader('Content-type', 'application/json');
-            http.send(JSON.stringify({type:"create"}));
-
+            this.props.store.name = this.state.name; // Store the player name for use in a later component
             let props = this.props;
-            http.onreadystatechange = function() {
-                if (this.readyState === 4 && this.status === 200) {
-                    console.log(http.responseText);
-                    props.store.code = JSON.parse(http.responseText).content;
-                    props.lobby();
-                }
-            }
+
+            // Use an action request to create a new lobby
+            doPost("create", null, function(data) {
+                console.log(data);
+                props.store.code = data.content;
+                props.lobby(); // Change the app state to render the lobby screen
+            });
         }
     }
 
@@ -65,5 +61,3 @@ class CreateForm extends React.Component {
         );
     }
 }
-
-export default CreateForm;

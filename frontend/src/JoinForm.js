@@ -2,7 +2,7 @@ import React from "react";
 import {doPost} from "./App";
 import {ReactComponent as BackIcon} from "./back.svg";
 //Join Game
-class JoinForm extends React.Component {
+export default class JoinForm extends React.Component {
     constructor(props) {
         super(props);
 
@@ -14,6 +14,7 @@ class JoinForm extends React.Component {
     }
 
     nameChange(event) {
+        // Only letters allowed, so replace invalid characters with an empty string
         this.setState({name: event.target.value.replace(/[^A-Za-z]/g, "")});
     }
 
@@ -22,18 +23,21 @@ class JoinForm extends React.Component {
     }
 
     handleSubmit(event) {
-        event.preventDefault();
+        event.preventDefault(); // override default behavior
         let name = this.state.name;
         let code = this.state.code;
         let props = this.props;
+        // Only submit the create request if there is a valid name and code
         if (code.length > 0 && name.length > 0) {
-            doPost("exists", code, function(data) {
+            // Use an info request to check if the supplied lobby exists
+            doPost("exists", code, function (data) {
                 if (data.content) {
+                    // If the lobby exists, save the code and name for later
                     props.store.code = code;
                     props.store.name = name;
-                    props.lobby();
+                    props.lobby(); // Render the lobby screen
                 } else {
-                    alert("Invalid room code!");
+                    alert("Invalid room code!"); // Tell the player that the lobby doesn't exist
                 }
             });
         }
@@ -46,7 +50,7 @@ class JoinForm extends React.Component {
                     <tbody>
                     <tr>
                         <td>
-                            <button id="back" type="button" onClick={this.props.main}><BackIcon /></button>
+                            <button id="back" type="button" onClick={this.props.main}><BackIcon/></button>
                         </td>
                     </tr>
                     <div id = "create-name">What's your name, traveler?
@@ -74,5 +78,3 @@ class JoinForm extends React.Component {
         );
     }
 }
-
-export default JoinForm;
