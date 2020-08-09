@@ -18,11 +18,16 @@ function doPost(type, code, callback) {
     // Do a POST request
     const http = new XMLHttpRequest();
     http.open("POST", "/lobby");
-    http.setRequestHeader("Content-type", "application/json");
+    http.setRequestHeader("Content-Type", "application/json");
     http.onreadystatechange = function () {
         // This signifies that the request was successful
         if (http.readyState === 4 && http.status === 200) {
-            callback(JSON.parse(http.responseText));
+            let contentType = http.getResponseHeader("Content-Type");
+            console.log(contentType);
+            if (contentType !== null && contentType.includes("application/json")) {
+                console.log(http.responseText);
+                callback(JSON.parse(http.responseText));
+            }
         }
     }
 
