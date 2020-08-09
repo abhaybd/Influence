@@ -1,7 +1,7 @@
 import React from "react";
 import {doPost} from "./App";
 import {ReactComponent as BackIcon} from "./back.svg";
-
+//Join Game
 export default class JoinForm extends React.Component {
     constructor(props) {
         super(props);
@@ -53,20 +53,18 @@ export default class JoinForm extends React.Component {
                             <button id="back" type="button" onClick={this.props.main}><BackIcon/></button>
                         </td>
                     </tr>
+                    <div id = "create-name">What's your name, traveler?
+                    </div>
                     <tr>
                         <td>
-                            Name:
-                        </td>
-                        <td>
-                            <input type="text" value={this.state.name} size='10' onChange={this.nameChange}/>
+                            <input type="text" value={this.state.name} size='10' placeholder = "Altaïr" maxlength = '12' onChange={this.nameChange}/>
                         </td>
                     </tr>
+                    <div id = "create-code">Enter Access Code
+                    </div>
                     <tr>
                         <td>
-                            Code:
-                        </td>
-                        <td>
-                            <input type="text" value={this.state.code} size='10' onChange={this.codeChange}/>
+                            <input type="text" value={this.state.code} size='10' placeholder = "end-line-game" onChange={this.codeChange}/>
                         </td>
                     </tr>
                     <tr>

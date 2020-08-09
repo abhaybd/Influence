@@ -1,7 +1,7 @@
 import React from "react";
 import {ReactComponent as BackIcon} from './back.svg';
 import {doPost} from "./App";
-
+//create Game
 export default class CreateForm extends React.Component {
     constructor(props) {
         super(props);
@@ -43,17 +43,16 @@ export default class CreateForm extends React.Component {
                             <button id="back" type="button" onClick={this.props.main}><BackIcon /></button>
                         </td>
                     </tr>
+                    <div id = "create-name">What's your name, traveler?
+                    </div>
                     <tr>
                         <td>
-                            Name:
-                        </td>
-                        <td>
-                            <input type="text" value={this.state.name} size='10' onChange={this.handleChange}/>
+                            <input type="text" value={this.state.name} size='10' placeholder = "Aguilar" maxlength = "12" onChange={this.handleChange}/>
                         </td>
                     </tr>
                     <tr>
                         <td colSpan='2'>
-                            <input type="submit" value="Create Lobby"/>
+                            <input type="submit"  value="Create Lobby"/>
                         </td>
                     </tr>
                     </tbody>

@@ -1,3 +1,4 @@
+//Main Screen - Overall Layout
 import React from "react";
 import "./App.css";
 import JoinForm from "./JoinForm";
@@ -37,12 +38,12 @@ function MainScreen(props) {
             <tbody>
             <tr>
                 <td>
-                    <button type="button" className="form-button" onClick={props.createForm}>Create</button>
+                    <button type="button" className="form-button" onClick={props.createForm}>Create Game</button>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <button type="button" className="form-button" onClick={props.joinForm}>Join</button>
+                    <button type="button" className="form-button" onClick={props.joinForm}>Join Game</button>
                 </td>
             </tr>
             </tbody>
@@ -158,10 +159,10 @@ class App extends React.Component {
                     {this.state.showRules ? <Rules back={this.toggleRules}/> : null}
                     <div id="rules-button" onClick={this.toggleRules}>
                         <u>{this.state.showRules ? "Hide" : "Show"} Rules</u></div>
-                    {this.state.showHeader ? <div id="header"><h1>Influence</h1><br/>Clone of Coup</div> : null}
+                    {this.state.showHeader ? <div id="header"><h1>INFLUENCE</h1><br/>A Game of Deception</div> : null}
                     {content}
                 </header>
-                <div id="footer"><a href="https://www.github.com/abhaybd">Made by Abhay Deshpande</a></div>
+                <div id="footer">Made by <a href="https://www.github.com/abhaybd">Abhay Deshpande</a></div>
             </div>
         );
     }

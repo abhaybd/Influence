@@ -1,5 +1,5 @@
 import React from "react";
-
+//game 
 export default class Game extends React.Component {
     constructor(props) {
         super(props);
