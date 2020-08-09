@@ -25,7 +25,7 @@ export default class CreateForm extends React.Component {
             let props = this.props;
 
             // Use an action request to create a new lobby
-            doPost("create", null, function(data) {
+            doPost("create", null, function (data) {
                 console.log(data);
                 props.store.code = data.content;
                 props.lobby(); // Change the app state to render the lobby screen
@@ -40,19 +40,20 @@ export default class CreateForm extends React.Component {
                     <tbody>
                     <tr>
                         <td>
-                            <button id="back" type="button" onClick={this.props.main}><BackIcon /></button>
+                            <button id="back" type="button" onClick={this.props.main}><BackIcon/></button>
                         </td>
                     </tr>
-                    <div id = "create-name">What's your name, traveler?
+                    <div id="create-name">What's your name, traveler?
                     </div>
                     <tr>
                         <td>
-                            <input type="text" value={this.state.name} size='10' placeholder = "Aguilar" maxlength = "12" onChange={this.handleChange}/>
+                            <input type="text" value={this.state.name} size='10' placeholder="Aguilar" maxLength="12"
+                                   onChange={this.handleChange}/>
                         </td>
                     </tr>
                     <tr>
                         <td colSpan='2'>
-                            <input type="submit"  value="Create Lobby"/>
+                            <input type="submit" value="Create Lobby"/>
                         </td>
                     </tr>
                     </tbody>

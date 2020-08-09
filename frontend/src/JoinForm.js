@@ -53,18 +53,20 @@ export default class JoinForm extends React.Component {
                             <button id="back" type="button" onClick={this.props.main}><BackIcon/></button>
                         </td>
                     </tr>
-                    <div id = "create-name">What's your name, traveler?
+                    <div id="create-name">What's your name, traveler?
                     </div>
                     <tr>
                         <td>
-                            <input type="text" value={this.state.name} size='10' placeholder = "Altaïr" maxlength = '12' onChange={this.nameChange}/>
+                            <input type="text" value={this.state.name} size='10' placeholder="Altaïr" maxLength='12'
+                                   onChange={this.nameChange}/>
                         </td>
                     </tr>
-                    <div id = "create-code">Enter Access Code
+                    <div id="create-code">Enter Access Code
                     </div>
                     <tr>
                         <td>
-                            <input type="text" value={this.state.code} size='10' placeholder = "end-line-game" onChange={this.codeChange}/>
+                            <input type="text" value={this.state.code} size='10' placeholder="end-line-game"
+                                   onChange={this.codeChange}/>
                         </td>
                     </tr>
                     <tr>
