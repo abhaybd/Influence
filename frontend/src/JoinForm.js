@@ -56,7 +56,7 @@ class JoinForm extends React.Component {
                             <input type="text" value={this.state.name} size='10' placeholder = "Altaïr" maxlength = '12' onChange={this.nameChange}/>
                         </td>
                     </tr>
-                    <div id = "create-code">Enter Acess Code
+                    <div id = "create-code">Enter Access Code
                     </div>
                     <tr>
                         <td>
