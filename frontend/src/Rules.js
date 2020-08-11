@@ -20,7 +20,7 @@ export default function Rules(props) {
             influence, the challenger player will lose an influence. However, if they fail to reveal the correct
             influence the challenged player will lose their incorrectly revealed influence.
             <br/><br/>
-            <b>Block:</b> When the any of the actions "Foreign Aid", "Steal", and "Assasinate" are used, they can be
+            <b>Block:</b> When the any of the actions "Foreign Aid", "Steal", and "Assassinate" are used, they can be
             blocked. Once again, any player can claim to have the correct influence to block. However, blocks can
             also be challenged by any player. If a block fails, the original action will take place.
             <br/><br/>
