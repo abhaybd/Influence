@@ -1,12 +1,12 @@
 import React from "react";
-import {doPost} from "./App";
-import {ReactComponent as BackIcon} from "./back.svg";
+import { doPost } from "./App";
+import { ReactComponent as BackIcon } from "./back.svg";
 //Join Game
 export default class JoinForm extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {name: '', code: ''};
+        this.state = { name: '', code: '' };
 
         this.nameChange = this.nameChange.bind(this);
         this.codeChange = this.codeChange.bind(this);
@@ -15,11 +15,11 @@ export default class JoinForm extends React.Component {
 
     nameChange(event) {
         // Only letters allowed, so replace invalid characters with an empty string
-        this.setState({name: event.target.value.replace(/[^A-Za-z]/g, "")});
+        this.setState({ name: event.target.value.replace(/[^A-Za-z]/g, "") });
     }
 
     codeChange(event) {
-        this.setState({code: event.target.value});
+        this.setState({ code: event.target.value });
     }
 
     handleSubmit(event) {
@@ -48,32 +48,32 @@ export default class JoinForm extends React.Component {
             <form onSubmit={this.handleSubmit}>
                 <table className="form-table">
                     <tbody>
-                    <tr>
-                        <td>
-                            <button id="back" type="button" onClick={this.props.main}><BackIcon/></button>
-                        </td>
-                    </tr>
-                    <div id="create-name">What's your name, traveler?
+                        <tr>
+                            <td>
+                                <button id="back" type="button" onClick={this.props.main}><BackIcon /></button>
+                            </td>
+                        </tr>
+                        <div id="create-name">What's your name, traveler?
                     </div>
-                    <tr>
-                        <td>
-                            <input type="text" value={this.state.name} size='10' placeholder="Altaïr" maxLength='12'
-                                   onChange={this.nameChange}/>
-                        </td>
-                    </tr>
-                    <div id="create-code">Enter Access Code
+                        <tr>
+                            <td>
+                                <input type="text" value={this.state.name} size='10' placeholder="Altaïr" maxLength='12'
+                                    onChange={this.nameChange} />
+                            </td>
+                        </tr>
+                        <div id="create-code">Enter Access Code
                     </div>
-                    <tr>
-                        <td>
-                            <input type="text" value={this.state.code} size='10' placeholder="end-line-game"
-                                   onChange={this.codeChange}/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colSpan='2'>
-                            <input type="submit" value="Join Lobby"/>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td>
+                                <input type="text" value={this.state.code} size='10' placeholder="end-line-game"
+                                    onChange={this.codeChange} />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colSpan='2'>
+                                <input type="submit" value="Join Lobby" />
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </form>

@@ -5,7 +5,7 @@ export default class Game extends React.Component {
         super(props);
         this.socket = props.socket;
         this.localPlayerName = props.localPlayer;
-        this.state = {players: props.players, choices: [], message: "", log: ["Started game!"]}
+        this.state = { players: props.players, choices: [], message: "", log: ["Started game!"], playerColor: null };
 
         this.onmessage = this.onmessage.bind(this);
         this.getLocalPlayer = this.getLocalPlayer.bind(this);
@@ -23,7 +23,14 @@ export default class Game extends React.Component {
         switch (data.type) {
             case "update":
                 // This is an update message, so update the player information
-                this.setState({players: data.content})
+
+                if (this.state.playerColor === null) {
+                    var assignColor = this.assignColors(data.content);
+                    this.setState({ players: data.content, playerColor: assignColor });
+                }
+                else {
+                    this.setState({ players: data.content });
+                }
                 break;
 
             case "info":
@@ -33,13 +40,13 @@ export default class Game extends React.Component {
 
             case "choice":
                 // We need to prompt the player to make a choice, so display those now
-                this.setState({choices: data.content, message: data.message});
+                this.setState({ choices: data.content, message: data.message });
                 break;
 
             case "stopChoice":
                 // The time for making choices has ended, so stop making a choice
                 // If the player wasn't already making a choice, this doesn't break anything
-                this.setState({choices: [], message: "Waiting for others..."});
+                this.setState({ choices: [], message: "Waiting for others..." });
                 break;
 
             case "log":
@@ -50,7 +57,7 @@ export default class Game extends React.Component {
                 while (log.length > 5) {
                     log.shift();
                 }
-                this.setState({log: log})
+                this.setState({ log: log })
                 break;
 
             default:
@@ -58,6 +65,16 @@ export default class Game extends React.Component {
                 console.warn("Unrecognized data " + data.toString());
                 break;
         }
+    }
+
+    //Assigns Colors to each player for their player card
+    assignColors(players) {
+        const colorList = ["#011627", "#ff9900", "#2EC4B6", "#E71D36", "#FF9F1C", "#606c38"];
+        let map = {};
+        for (let i = 0; i < players.length; i++) {
+            map[players[i].name] = colorList[i];
+        }
+        return map;
     }
 
     numInfluence(cards) {
@@ -73,27 +90,27 @@ export default class Game extends React.Component {
             }
         }
         // If no such player exists, just return an empty player
-        return {name: "", cards: [], coins: 0};
+        return { name: "", cards: [], coins: 0 };
     }
 
     onChoice(choice) {
         // The player has made a choice, so stop displaying the choices
-        this.setState({choices: [], message: "Waiting for others..."});
+        this.setState({ choices: [], message: "Waiting for others..." });
         this.socket.send(JSON.stringify(choice)); // Send the players choice to the server
     }
 
     render() {
         // Map a player to a JSX element for displaying
-        const Player = ({player, influence, coins}) => (
-            <div className={player === this.localPlayerName ? "local-player-icon" : "player-icon"}>
-                {player} <br/>
-                Coins: {coins} <br/>
-                Influence: {influence}
+        const Player = ({ player, influence, coins, color }) => (
+            <div className={player === this.localPlayerName ? "local-player-icon" : "player-icon"} style={{ backgroundColor: color }}>
+                {player} <br />
+                Coins: {coins} <br />
+                Influences: {influence}
             </div>
         );
 
         // Map a choice to a JSX element for displaying
-        const Choice = ({choice}) => (
+        const Choice = ({ choice }) => (
             <button className="game-button" onClick={() => this.onChoice(choice)}>
                 <div className="player-icon">
                     {choice}
@@ -105,12 +122,12 @@ export default class Game extends React.Component {
         return (
             <div>
                 <div id="event-log">
-                    {this.state.log.map(line => <div>{line}<br/></div>)}
+                    {this.state.log.map(line => <div>{line}<br /></div>)}
                 </div>
                 <div className="game-container">
                     {this.state.players.map(player => <Player key={player.name} player={player.name}
-                                                              coins={player.coins}
-                                                              influence={this.numInfluence(player.cards)}/>)}
+                        coins={player.coins}
+                        influence={this.numInfluence(player.cards)} color={this.state.playerColor[player.name]} />)}
                 </div>
                 <div className="game-container">
                     {this.getLocalPlayer().cards.map(card => card === null ? null :
@@ -120,7 +137,7 @@ export default class Game extends React.Component {
                     {this.state.message}
                 </div>
                 <div className="game-container">
-                    {this.state.choices.map((choice, i) => <Choice key={i} choice={choice}/>)}
+                    {this.state.choices.map((choice, i) => <Choice key={i} choice={choice} />)}
                 </div>
             </div>
         );
