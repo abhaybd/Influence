@@ -69,7 +69,7 @@ export default class Game extends React.Component {
 
     //Assigns Colors to each player for their player card
     assignColors(players) {
-        const colorList = ["#011627", "#ff9900", "#2EC4B6", "#E71D36", "#FF9F1C", "#606c38"];
+        const colorList = ["#FFF275", "#FF8C42", "#FF3C38", "#A23E48", "#6C8EAD", "#E8D7FF"];
         let map = {};
         for (let i = 0; i < players.length; i++) {
             map[players[i].name] = colorList[i];
