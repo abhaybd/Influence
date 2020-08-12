@@ -1,5 +1,6 @@
 //Main Screen - Overall Layout
 import React from "react";
+import {Switch, Route, withRouter} from "react-router-dom";
 import "./App.css";
 import JoinForm from "./JoinForm";
 import CreateForm from "./CreateForm";
@@ -60,7 +61,7 @@ class App extends React.Component {
     constructor(props) {
         super(props);
         // Create the initial state
-        this.state = {view: "main", showHeader: true, showRules: false}
+        this.state = {showRules: false};
         // This is where child components can store the info they get (the player name, lobby code, etc)
         this.store = {};
 
@@ -75,15 +76,15 @@ class App extends React.Component {
     }
 
     createForm() {
-        this.setState({view: "create"});
+        this.props.history.push("/create");
     }
 
     joinForm() {
-        this.setState({view: "join"});
+        this.props.history.push("/join");
     }
 
     mainScreen() {
-        this.setState({view: "main", showHeader: true});
+        this.props.history.push("/");
     }
 
     showLobby() {
@@ -95,7 +96,7 @@ class App extends React.Component {
         new_uri += "//" + loc.host.replace("3000", "8080");
         // On prod servers, the port isn't in the url but on dev servers it is. So make sure to not duplicate the port
         if (!new_uri.endsWith(":8080")) new_uri += ":8080";
-        new_uri += "/join/" + this.store.code + "/" + this.store.name;
+        new_uri += "/ws/join/" + this.store.code + "/" + this.store.name;
         new_uri = new_uri.replace("3000", "8080");
         console.log(new_uri);
         let socket = new WebSocket(new_uri); // Open the websocket connection
@@ -107,7 +108,7 @@ class App extends React.Component {
             alert("The server disconnected unexpectedly!");
         }
         this.socket = socket;
-        this.setState({showHeader: false, view: "lobby"}); // render the lobby view
+        this.props.history.push("/lobby");
     }
 
     start() {
@@ -124,7 +125,7 @@ class App extends React.Component {
     }
 
     onStart() {
-        this.setState({view: "game"})
+        this.props.history.push("/game");
     }
 
     toggleRules() {
@@ -133,30 +134,8 @@ class App extends React.Component {
     }
 
     render() {
-        // Change the content to render based on the state
-        let content;
-        switch (this.state.view) {
-            case "main":
-                content = <MainScreen createForm={this.createForm} joinForm={this.joinForm}/>
-                break;
-            case "create":
-                content = <CreateForm store={this.store} main={this.mainScreen} lobby={this.showLobby}/>
-                break;
-            case "join":
-                content = <JoinForm store={this.store} main={this.mainScreen} lobby={this.showLobby}/>
-                break;
-            case "lobby":
-                content =
-                    <Lobby socket={this.socket} start={this.start} onStart={this.onStart} code={this.store.code}/>
-                break;
-            case "game":
-                content = <Game players={[]} socket={this.socket} localPlayer={this.store.name}/>
-                break;
-            default:
-                content = null;
-                console.warn("Invalid state!");
-                break;
-        }
+        const Header = () => <div id="header"><h1>INFLUENCE</h1><br/>A Game of Deception</div>
+
         // Render the app and the content
         return (
             <div className="App">
@@ -164,8 +143,29 @@ class App extends React.Component {
                     {this.state.showRules ? <Rules back={this.toggleRules}/> : null}
                     <div id="rules-button" onClick={this.toggleRules}>
                         <u>{this.state.showRules ? "Hide" : "Show"} Rules</u></div>
-                    {this.state.showHeader ? <div id="header"><h1>INFLUENCE</h1><br/>A Game of Deception</div> : null}
-                    {content}
+                    <Switch>
+                        <Route exact path="/" component={Header}/>
+                        <Route path="/create" component={Header}/>
+                        <Route path="/join" component={Header}/>
+                        <Route path="/lobby" component={Header}/>
+                    </Switch>
+                    <Switch>
+                        <Route exact path="/">
+                            <MainScreen createForm={this.createForm} joinForm={this.joinForm}/>
+                        </Route>
+                        <Route path="/create">
+                            <CreateForm store={this.store} main={this.mainScreen} lobby={this.showLobby}/>
+                        </Route>
+                        <Route path="/join">
+                            <JoinForm store={this.store} main={this.mainScreen} lobby={this.showLobby}/>
+                        </Route>
+                        <Route path="/lobby">
+                            <Lobby socket={this.socket} start={this.start} onStart={this.onStart} code={this.store.code}/>
+                        </Route>
+                        <Route path="/game">
+                            <Game players={[]} socket={this.socket} localPlayer={this.store.name}/>
+                        </Route>
+                    </Switch>
                 </header>
                 <div id="footer">Made by <a href="https://www.github.com/abhaybd">Abhay Deshpande</a></div>
             </div>
@@ -173,5 +173,5 @@ class App extends React.Component {
     }
 }
 
-export default App;
+export default withRouter(App);
 export {doPost};
