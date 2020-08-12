@@ -4,16 +4,12 @@ export default class Lobby extends React.Component {
     constructor(props) {
         super(props);
         this.state = {players: []}
+        this.socket = props.socket;
 
-        if (props.socket !== undefined) {
-            this.socket = props.socket;
+        // Register the onmessage event handler for the websocket
+        this.onmessage = this.onmessage.bind(this);
 
-            // Register the onmessage event handler for the websocket
-            this.onmessage = this.onmessage.bind(this);
-
-            this.socket.onmessage = this.onmessage;
-            window.onbeforeunload = () => true; // block refreshes
-        }
+        this.socket.onmessage = this.onmessage;
     }
 
     onmessage(event) {
@@ -38,9 +34,8 @@ export default class Lobby extends React.Component {
             </tr>
         );
 
-        let component = <p>An error occurred! Please create a new lobby or join an existing one!</p>;
-        if (this.state.players.length > 0) {
-            component = (<div id="centered">
+        return (
+            <div id="centered">
                 <table>
                     <tbody>
                     {this.state.players.map((player, i) => (<Row player={player} key={i}/>))}
@@ -57,10 +52,8 @@ export default class Lobby extends React.Component {
                     </tr>
                     </tbody>
                 </table>
-            </div>);
-        }
-
-        return component;
+            </div>
+        );
     }
 
 }

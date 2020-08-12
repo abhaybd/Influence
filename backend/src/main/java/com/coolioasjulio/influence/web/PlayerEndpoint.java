@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-@ServerEndpoint(value = "/ws/join/{code}/{name}")
+@ServerEndpoint(value = "/join/{code}/{name}")
 public class PlayerEndpoint {
     private Session session;
     private String name;
