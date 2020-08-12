@@ -1,4 +1,4 @@
- import React from "react";
+import React from "react";
 import {ReactComponent as BackIcon} from './back.svg';
 import {doPost} from "./App";
 //create Game
@@ -56,7 +56,7 @@ export default class CreateForm extends React.Component {
                     </tr>
                     <tr>
                         <td colSpan='2'>
-                            <input type="submit"  value="Create Lobby"/>
+                            <input type="submit" value="Create Lobby"/>
                         </td>
                     </tr>
                     </tbody>
