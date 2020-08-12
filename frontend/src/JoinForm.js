@@ -48,32 +48,38 @@ export default class JoinForm extends React.Component {
             <form onSubmit={this.handleSubmit}>
                 <table className="form-table">
                     <tbody>
-                        <tr>
-                            <td>
-                                <button id="back" type="button" onClick={this.props.main}><BackIcon /></button>
-                            </td>
-                        </tr>
-                        <div id="create-name">What's your name, traveler?
-                    </div>
-                        <tr>
-                            <td>
-                                <input type="text" value={this.state.name} size='10' placeholder="Altaïr" maxLength='12'
-                                    onChange={this.nameChange} />
-                            </td>
-                        </tr>
-                        <div id="create-code">Enter Access Code
-                    </div>
-                        <tr>
-                            <td>
-                                <input type="text" value={this.state.code} size='10' placeholder="end-line-game"
-                                    onChange={this.codeChange} />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colSpan='2'>
-                                <input type="submit" value="Join Lobby" />
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>
+                            <button id="back" type="button" onClick={this.props.main}><BackIcon/></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div id="create-name">What's your name, traveler?</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="text" value={this.state.name} size='10' placeholder="Altaïr" maxLength='12'
+                                   onChange={this.nameChange}/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div id="create-code">Enter Access Code</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="text" value={this.state.code} size='10' placeholder="end-line-game"
+                                   onChange={this.codeChange}/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colSpan='2'>
+                            <input type="submit" value="Join Lobby"/>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
             </form>
