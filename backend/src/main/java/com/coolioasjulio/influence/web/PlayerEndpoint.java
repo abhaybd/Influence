@@ -1,5 +1,8 @@
 package com.coolioasjulio.influence.web;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
@@ -7,24 +10,28 @@ import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-@ServerEndpoint(value = "/join/{code}/{name}")
+@ServerEndpoint(value = "/ws/join/{code}/{name}")
 public class PlayerEndpoint {
     private Session session;
     private String name;
     private final BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
+    private final Set<Thread> readingThreads = Collections.synchronizedSet(new HashSet<>());
     private Lobby lobby;
+    private volatile boolean connected;
 
     @OnOpen
     public void onOpen(Session session, @PathParam("code") String code, @PathParam("name") String name) throws IOException {
-        System.out.println("Websocket from " + name);
+        System.out.printf("Websocket from %s to lobby %s\n", name, code);
         this.session = session;
         this.name = name;
         lobby = Lobby.getLobby(code);
         // Check if the asked for lobby exists
         if (lobby != null) {
             // Try to add this player to the lobby
+            connected = true;
             if (!lobby.addPlayer(this)) {
                 // If unsuccessful, close the player session
+                connected = false;
                 session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Invalid lobby or name already taken!"));
             }
         } else {
@@ -36,9 +43,13 @@ public class PlayerEndpoint {
     @OnClose
     public void onClose() {
         // If this player has joined a lobby, signal to the lobby that it disconnected
+        connected = false;
         if (lobby != null) {
             lobby.removePlayer(this);
         }
+
+        // Interrupt all threads that are currently waiting on the message queue
+        readingThreads.forEach(Thread::interrupt);
     }
 
     @OnMessage
@@ -48,24 +59,46 @@ public class PlayerEndpoint {
     }
 
     @OnError
-    public void onError(Session session, Throwable throwable) {
-        // TODO: not gonna lie, no idea what to do here
+    public void onError(Throwable throwable) {
+        System.err.printf("Error with %s in lobby %s: %s\n", name, lobby.getCode(), throwable.getMessage());
     }
 
     public synchronized void close() throws IOException {
         session.close();
     }
 
-    public String readLine() throws InterruptedException {
-        return messageQueue.take();
+    public boolean isConnected() {
+        return connected;
     }
 
-    public synchronized void write(String message) {
+    public String readLine() throws InterruptedException {
+        // No-op if this endpoint is disconnected
+        if (!connected) return null;
+        // We'll cache the threads that are waiting on the queue
+        // That way, if this socket closes we can interrupt those threads, which would otherwise sleep forever
+        Thread thread = Thread.currentThread();
         try {
-            session.getBasicRemote().sendText(message);
-        } catch (IOException e) {
-            e.printStackTrace();
+            // Cache the thread and wait for data from the queue to become available
+            readingThreads.add(thread);
+            return messageQueue.take();
+        } finally {
+            // The thread is no longer waiting, so remove this thread from the cache
+            readingThreads.remove(thread);
         }
+    }
+
+    public synchronized boolean write(String message) {
+        // No-op if this endpoint is disconnected
+        if (isConnected()) {
+            try {
+                // Send the message
+                session.getBasicRemote().sendText(message);
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 
     public String getName() {

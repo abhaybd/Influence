@@ -1,11 +1,13 @@
 //Main Screen - Overall Layout
 import React from "react";
+import {Switch, Route, withRouter} from "react-router-dom";
 import "./App.css";
 import JoinForm from "./JoinForm";
 import CreateForm from "./CreateForm";
 import Lobby from "./Lobby";
 import Game from "./Game";
 import Rules from "./Rules";
+import queryString from "query-string";
 
 /**
  * Perform a POST request to the lobby API endpoint. This can either be an info or action request.
@@ -36,6 +38,30 @@ function doPost(type, code, callback) {
     http.send(body);
 }
 
+function createSocket(name, code, onclose=null) {
+    // This assembles the websocket uri
+    // Essentially, change the protocol from http to ws, and direct the websocket to port 8080
+    let loc = window.location;
+    let newUri = loc.protocol === "https:" ? "wss:" : "ws:";
+    // React proxy doesn't redirect websockets, so we'll have to manually replace the port 3000 with 8080
+    newUri += "//" + loc.host.replace("3000", "8080");
+    // On prod servers, the port isn't in the url but on dev servers it is. So make sure to not duplicate the port
+    if (!newUri.endsWith(":8080")) newUri += ":8080";
+    newUri += "/ws/join/" + code + "/" + name;
+    newUri = newUri.replace("3000", "8080");
+    console.log(newUri);
+    let socket = new WebSocket(newUri); // Open the websocket connection
+    socket.onopen = function (event) {
+        console.log("Opened!");
+    };
+    socket.onclose = onclose ?? function (event) {
+        console.log(event);
+        alert("The server disconnected unexpectedly! Error: " + event.reason);
+    };
+
+    return socket;
+}
+
 function MainScreen(props) {
     // This defines the main screen, with the buttons to either join or create a lobby
     return (
@@ -59,55 +85,50 @@ function MainScreen(props) {
 class App extends React.Component {
     constructor(props) {
         super(props);
-        // Create the initial state
-        this.state = {view: "main", showHeader: true, showRules: false}
+
         // This is where child components can store the info they get (the player name, lobby code, etc)
         this.store = {};
+        this.showLobby = false;
 
         // Bind methods to this instance
         this.createForm = this.createForm.bind(this);
         this.joinForm = this.joinForm.bind(this);
         this.mainScreen = this.mainScreen.bind(this);
-        this.showLobby = this.showLobby.bind(this);
+        this.lobby = this.lobby.bind(this);
         this.start = this.start.bind(this);
         this.onStart = this.onStart.bind(this);
         this.toggleRules = this.toggleRules.bind(this);
+        this.pushState = this.pushState.bind(this);
+    }
+
+    pushState(pathname, state = {}, search={}) {
+        let searchString = "?" + queryString.stringify(search);
+        this.props.history.push({pathname: pathname, state: state, search:searchString});
     }
 
     createForm() {
-        this.setState({view: "create"});
+        // go to the create form, hiding the lobby
+        this.showLobby = false;
+        this.pushState("/create");
     }
 
     joinForm() {
-        this.setState({view: "join"});
+        // go to the join form, hiding the lobby
+        this.showLobby = false;
+        this.pushState("/join");
     }
 
     mainScreen() {
-        this.setState({view: "main", showHeader: true});
+        // go to the main screen
+        this.pushState("/");
     }
 
-    showLobby() {
-        // This assembles the websocket uri
-        // Essentially, change the protocol from http to ws, and direct the websocket to port 8080
-        let loc = window.location;
-        let new_uri = loc.protocol === "https:" ? "wss:" : "ws:";
-        // React proxy doesn't redirect websockets, so we'll have to manually replace the port 3000 with 8080
-        new_uri += "//" + loc.host.replace("3000", "8080");
-        // On prod servers, the port isn't in the url but on dev servers it is. So make sure to not duplicate the port
-        if (!new_uri.endsWith(":8080")) new_uri += ":8080";
-        new_uri += "/join/" + this.store.code + "/" + this.store.name;
-        new_uri = new_uri.replace("3000", "8080");
-        console.log(new_uri);
-        let socket = new WebSocket(new_uri); // Open the websocket connection
-        socket.onopen = function (event) {
-            console.log("Opened!");
-        }
-        socket.onclose = function (event) {
-            console.log(event);
-            alert("The server disconnected unexpectedly!");
-        }
-        this.socket = socket;
-        this.setState({showHeader: false, view: "lobby"}); // render the lobby view
+    lobby() {
+        // Create a websocket and connect to the server
+        this.socket = createSocket(this.store.name, this.store.code);
+        // Don't change the current location, but change the current state to show the lobby
+        this.pushState(this.props.location.pathname);
+        this.showLobby = true;
     }
 
     start() {
@@ -124,48 +145,56 @@ class App extends React.Component {
     }
 
     onStart() {
-        this.setState({view: "game"})
+        // We're starting the game, so add the name and code to the url as parameters
+        // This will allow the player to reconnect if they disconnect later
+        let info = {name: this.store.name, code: this.store.code};
+        this.pushState("/game", {}, info);
     }
 
     toggleRules() {
-        let rules = this.state.showRules;
-        this.setState({showRules: !rules});
+        // Don't change the location, just toggle the rules state
+        const currShowRules = this.props.location.state?.showRules || false;
+        this.pushState(this.props.location.pathname, {showRules: !currShowRules});
     }
 
     render() {
-        // Change the content to render based on the state
-        let content;
-        switch (this.state.view) {
-            case "main":
-                content = <MainScreen createForm={this.createForm} joinForm={this.joinForm}/>
-                break;
-            case "create":
-                content = <CreateForm store={this.store} main={this.mainScreen} lobby={this.showLobby}/>
-                break;
-            case "join":
-                content = <JoinForm store={this.store} main={this.mainScreen} lobby={this.showLobby}/>
-                break;
-            case "lobby":
-                content =
-                    <Lobby socket={this.socket} start={this.start} onStart={this.onStart} code={this.store.code}/>
-                break;
-            case "game":
-                content = <Game players={[]} socket={this.socket} localPlayer={this.store.name}/>
-                break;
-            default:
-                content = null;
-                console.warn("Invalid state!");
-                break;
-        }
+        const Header = () => <div id="header"><h1>INFLUENCE</h1><br/>A Game of Deception</div>
+
+        const showRules = this.props.location.state?.showRules || false;
+        const showLobby = this.showLobby;
+
         // Render the app and the content
         return (
             <div className="App">
                 <header className="App-header">
-                    {this.state.showRules ? <Rules back={this.toggleRules}/> : null}
+                    {showRules ? <Rules back={this.toggleRules}/> : null}
                     <div id="rules-button" onClick={this.toggleRules}>
-                        <u>{this.state.showRules ? "Hide" : "Show"} Rules</u></div>
-                    {this.state.showHeader ? <div id="header"><h1>INFLUENCE</h1><br/>A Game of Deception</div> : null}
-                    {content}
+                        <u>{showRules ? "Hide" : "Show"} Rules</u></div>
+                    <Switch>
+                        <Route exact path="/" component={Header}/>
+                        <Route path="/create" component={Header}/>
+                        <Route path="/join" component={Header}/>
+                    </Switch>
+                    <Switch>
+                        <Route exact path="/">
+                            <MainScreen createForm={this.createForm} joinForm={this.joinForm}/>
+                        </Route>
+                        <Route path="/create">
+                            {showLobby ?
+                                <Lobby socket={this.socket} start={this.start} onStart={this.onStart}
+                                       code={this.store.code}/>
+                                : <CreateForm store={this.store} main={this.mainScreen} lobby={this.lobby}/>}
+                        </Route>
+                        <Route path="/join">
+                            {showLobby ?
+                                <Lobby socket={this.socket} start={this.start} onStart={this.onStart}
+                                       code={this.store.code}/>
+                                : <JoinForm store={this.store} main={this.mainScreen} lobby={this.lobby}/>}
+                        </Route>
+                        <Route path="/game">
+                            <Game players={[]} socket={this.socket} localPlayer={this.store.name}/>
+                        </Route>
+                    </Switch>
                 </header>
                 <div id="footer">Made by <a href="https://www.github.com/abhaybd">Abhay Deshpande</a></div>
             </div>
@@ -173,5 +202,5 @@ class App extends React.Component {
     }
 }
 
-export default App;
-export {doPost};
+export default withRouter(App);
+export {doPost, createSocket};

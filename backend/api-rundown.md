@@ -46,11 +46,13 @@ Info requests retrieve information about lobbies.
 
 ## Player WebSocket
 
-Communication with the player happens through a WebSocket connection. The server expects the connection on port 8080.
+Communication with the player happens through a WebSocket connection. The server expects the connection at `/ws/join/{code}/{name}` on port 8080. Replace `{code}` and `{name}` with the game code and player name, respectively.
 
-There are 2 phases of the socket lifecycle: `lobby` and `game`. Once a lobby has started the game, it will keep playing new games forever until the lobby is closed by all players disconnecting.
+There are 2 phases of the socket lifecycle: `lobby` and `game`. Once a lobby has started the game, (transitioned into the `game` phase) it will keep playing new games forever until the lobby is closed by all players disconnecting.
 
-If a player's socket disconnects, the game must be restarted and a new lobby must be created.
+No new players may connect to a game once it starts, however an existing player that disconnected may reconnect.
+
+A player may skip the `lobby` phase if the game has already started, and they are a reconnecting player. In this case, the new socket will immediately be in the `game` phase. The server will verify that the name matches a previous player that had disconnected. If the conditions aren't met, the new connection will be terminated.
 
 ### Lobby phase
 
@@ -64,9 +66,11 @@ When the game starts, the game signals all players to start by sending the strin
 
 During the `game` phase, all players are playing the game. During this time, the server will prompt each user as necessary for an action, as defined by the rules of the game. Clients should not send anything unless specifically requested by the server.
 
-All messages from the server will look like this: `{"type":"TYPE", "message":"MESSAGE", "content":{CONTENT}}`
+All messages from the server will look like this: `{"type":"TYPE", "message":"MESSAGE", "content":CONTENT}`
 
 The `message` key may not be defined. If it is, the client should show the message to the player. If it is not defined, the client is free to display anything, as long as the displayed content is different than the last `message` received.
+
+If the server must disconnect from the client, such as if the client is attempting to join an invalid game, the server will provide a close reason when it closes the connection. The client may show this reason to the user, if they so wish.
 
 The value of the `type` key dictates how the `content` should be interpreted.
 
@@ -75,5 +79,5 @@ The `type` value will be one of these:
 - `info` - This message is used for significant information events. Typically, this is when a player wins the game, or when a player dies. The `content` value will be a string to display.
 - `log` - This denotes a game event, and should be displayed in the game event log. The `content` value will be a string to display.
 - `update` - This signifies a game update. The `content` value will be a JSON array of players. Each player will be defined like this: `{"name":PLAYER-NAME, "coins":2, "cards":["Duke", null]}`. As of now, all players' information is transmitted to everyone, so the client should not display information that the player should not know. The `cards` value will be a JSON array of strings, showing the influence cards a player has. The length of this array will be 2. If a player has less than 2 influence, then the array will be padded with `null` values to maintain a length of 2. Dead players will not be included in game updates.
-- `choice` - This tells clients to prompt the player to make a choice. Typically, the `message` value will be the prompt to display to the player. The value of `content` will be a JSON array of strings to display to the player, who must choose one. This is the only message that the client should respond to. The response should be a JSON-formatted string, whose content matches EXACTLY one of the choices given to the client. That is, the response must be one of the elements of `content`. If a client responds with an invalid response, the game will terminate.
+- `choice` - This tells clients to prompt the player to make a choice. Typically, the `message` value will be the prompt to display to the player. The value of `content` will be a JSON array of strings to display to the player, who must choose one. (Ex: `["Option 1", "Option 2"]`) This is the only message that the client should respond to. The response should be a JSON-formatted string, whose content matches EXACTLY one of the choices given to the client. That is, the response must be one of the elements of `content`. If a client responds with an invalid response, the game will terminate.
 - `stopChoice` - This denotes that the player is no longer able to make a choice. All `choice` messages will be followed with a `stopChoice` message, even if the player already made a choice. If the player made a choice and the client received a `stopChoice` message, the client should handle it gracefully. This is the only server message for which the `content` key can be ignored. It may not even be defined.

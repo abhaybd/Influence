@@ -14,6 +14,9 @@ The project is being hosted on AWS Elastic Beanstalk.
 
 - Online multiplayer 
   - Play with your friends from anywhere (2-6 players)
+- Graceful disconnection/reconnection handling
+  - When an active player disconnects, the game will hold and wait for them to reconnect
+  - This covers brief Wi-Fi disconnections, reloading the page, etc.
 - Painless lobby creation 
   - Instead of a mess of random characters, join codes are a few words, making it much easier to share
 - Easy access to rules

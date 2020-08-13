@@ -4,12 +4,16 @@ export default class Lobby extends React.Component {
     constructor(props) {
         super(props);
         this.state = {players: []}
-        this.socket = props.socket;
 
-        // Register the onmessage event handler for the websocket
-        this.onmessage = this.onmessage.bind(this);
+        if (props.socket !== undefined) {
+            this.socket = props.socket;
 
-        this.socket.onmessage = this.onmessage;
+            // Register the onmessage event handler for the websocket
+            this.onmessage = this.onmessage.bind(this);
+
+            this.socket.onmessage = this.onmessage;
+            window.onbeforeunload = () => true; // block refreshes
+        }
     }
 
     onmessage(event) {
@@ -34,26 +38,31 @@ export default class Lobby extends React.Component {
             </tr>
         );
 
-        return (
-            <div id="centered">
-                <table>
-                    <tbody>
-                    {this.state.players.map((player, i) => (<Row player={player} key={i}/>))}
-                    <tr>
-                        <td>
-                            <button type="button" className="form-button" onClick={this.props.start}>Start
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            Code: {this.props.code}
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
+        let component = <p>An error occurred! Please create a new lobby or join an existing one!</p>;
+        // If the socket exists, we're connected to the lobby. Otherwise, show an error message.
+        if (this.socket) {
+            component = (
+                <div id="centered">
+                    <table>
+                        <tbody>
+                        {this.state.players.map((player, i) => (<Row player={player} key={i}/>))}
+                        <tr>
+                            <td>
+                                <button type="button" className="form-button" onClick={this.props.start}>Start
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Code: {this.props.code}
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            );
+        }
 
+        return component;
+    }
 }

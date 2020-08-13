@@ -1,22 +1,43 @@
 import React from "react";
-//game 
-export default class Game extends React.Component {
+import {createSocket} from "./App";
+import queryString from "query-string";
+import {withRouter} from "react-router";
+
+//game
+class Game extends React.Component {
     constructor(props) {
         super(props);
-        this.socket = props.socket;
-        this.localPlayerName = props.localPlayer;
-        this.state = { players: props.players, choices: [], message: "", log: ["Started game!"], playerColor: null };
 
-        this.onmessage = this.onmessage.bind(this);
+        this.onMessage = this.onMessage.bind(this);
+        this.onDisconnect = this.onDisconnect.bind(this);
         this.getLocalPlayer = this.getLocalPlayer.bind(this);
 
-        // Register the onmessage event handler for the websocket
-        this.socket.onmessage = this.onmessage;
+        this.state = {players: props.players ?? [], choices: [], message: "", log: ["Started game!"]}
 
         window.onbeforeunload = () => true; // block refreshes
     }
 
-    onmessage(event) {
+    componentDidMount() {
+        console.log("Game mounted!");
+        if (this.props.socket) {
+            this.socket = this.props.socket;
+            this.localPlayerName = this.props.localPlayer;
+        } else {
+            let args = queryString.parse(this.props.location.search);
+            this.socket = createSocket(args.name, args.code, this.onDisconnect);
+            this.localPlayerName = args.name;
+        }
+
+        // Register the onmessage event handler for the websocket
+        this.socket.onmessage = this.onMessage;
+    }
+
+    onDisconnect(event) {
+        alert("Unexpected disconnection from server! Error: " + event.reason);
+        this.props.history.push("/");
+    }
+
+    onMessage(event) {
         let json = event.data;
         let data = JSON.parse(json);
         // We've received a message from the server, so follow the instruction
@@ -143,3 +164,5 @@ export default class Game extends React.Component {
         );
     }
 }
+
+export default withRouter(Game);
