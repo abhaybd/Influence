@@ -7,6 +7,7 @@ import CreateForm from "./CreateForm";
 import Lobby from "./Lobby";
 import Game from "./Game";
 import Rules from "./Rules";
+import queryString from "query-string";
 
 /**
  * Perform a POST request to the lobby API endpoint. This can either be an info or action request.
@@ -35,6 +36,30 @@ function doPost(type, code, callback) {
     // Serialize the content and send
     let body = JSON.stringify({type: type, code: code});
     http.send(body);
+}
+
+function createSocket(name, code, onclose=null) {
+    // This assembles the websocket uri
+    // Essentially, change the protocol from http to ws, and direct the websocket to port 8080
+    let loc = window.location;
+    let newUri = loc.protocol === "https:" ? "wss:" : "ws:";
+    // React proxy doesn't redirect websockets, so we'll have to manually replace the port 3000 with 8080
+    newUri += "//" + loc.host.replace("3000", "8080");
+    // On prod servers, the port isn't in the url but on dev servers it is. So make sure to not duplicate the port
+    if (!newUri.endsWith(":8080")) newUri += ":8080";
+    newUri += "/ws/join/" + code + "/" + name;
+    newUri = newUri.replace("3000", "8080");
+    console.log(newUri);
+    let socket = new WebSocket(newUri); // Open the websocket connection
+    socket.onopen = function (event) {
+        console.log("Opened!");
+    };
+    socket.onclose = onclose ?? function (event) {
+        console.log(event);
+        alert("The server disconnected unexpectedly! Error: " + event.reason);
+    };
+
+    return socket;
 }
 
 function MainScreen(props) {
@@ -75,8 +100,9 @@ class App extends React.Component {
         this.pushState = this.pushState.bind(this);
     }
 
-    pushState(pathname, state = {}) {
-        this.props.history.push({pathname: pathname, state: state});
+    pushState(pathname, state = {}, search={}) {
+        let searchString = "?" + queryString.stringify(search);
+        this.props.history.push({pathname: pathname, state: state, search:searchString});
     }
 
     createForm() {
@@ -92,26 +118,7 @@ class App extends React.Component {
     }
 
     showLobby() {
-        // This assembles the websocket uri
-        // Essentially, change the protocol from http to ws, and direct the websocket to port 8080
-        let loc = window.location;
-        let new_uri = loc.protocol === "https:" ? "wss:" : "ws:";
-        // React proxy doesn't redirect websockets, so we'll have to manually replace the port 3000 with 8080
-        new_uri += "//" + loc.host.replace("3000", "8080");
-        // On prod servers, the port isn't in the url but on dev servers it is. So make sure to not duplicate the port
-        if (!new_uri.endsWith(":8080")) new_uri += ":8080";
-        new_uri += "/ws/join/" + this.store.code + "/" + this.store.name;
-        new_uri = new_uri.replace("3000", "8080");
-        console.log(new_uri);
-        let socket = new WebSocket(new_uri); // Open the websocket connection
-        socket.onopen = function (event) {
-            console.log("Opened!");
-        }
-        socket.onclose = function (event) {
-            console.log(event);
-            alert("The server disconnected unexpectedly!");
-        }
-        this.socket = socket;
+        this.socket = createSocket(this.store.name, this.store.code);
         this.pushState(this.props.location.pathname, {showLobby: true});
     }
 
@@ -129,7 +136,9 @@ class App extends React.Component {
     }
 
     onStart() {
-        this.pushState("/game");
+        let info = {name: this.store.name, code: this.store.code};
+
+        this.pushState("/game", {}, info);
     }
 
     toggleRules() {
@@ -183,4 +192,4 @@ class App extends React.Component {
 }
 
 export default withRouter(App);
-export {doPost};
+export {doPost, createSocket};

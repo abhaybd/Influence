@@ -1,22 +1,37 @@
 import React from "react";
+import {createSocket} from "./App";
+import queryString from "query-string";
+import {withRouter} from "react-router";
 //game 
-export default class Game extends React.Component {
+class Game extends React.Component {
     constructor(props) {
         super(props);
-        this.socket = props.socket;
-        this.localPlayerName = props.localPlayer;
-        this.state = {players: props.players, choices: [], message: "", log: ["Started game!"]}
 
-        this.onmessage = this.onmessage.bind(this);
+        this.onMessage = this.onMessage.bind(this);
+        this.onDisconnect = this.onDisconnect.bind(this);
         this.getLocalPlayer = this.getLocalPlayer.bind(this);
 
-        // Register the onmessage event handler for the websocket
-        this.socket.onmessage = this.onmessage;
+        if (props.socket) {
+            this.socket = props.socket;
+            this.localPlayerName = props.localPlayer;
+        } else {
+            let args = queryString.parse(this.props.location.search);
+            this.socket = createSocket(args.name, args.code, this.onDisconnect);
+        }
 
+        this.state = {players: props.players ?? [], choices: [], message: "", log: ["Started game!"]}
+
+        // Register the onmessage event handler for the websocket
+        this.socket.onmessage = this.onMessage;
         window.onbeforeunload = () => true; // block refreshes
     }
 
-    onmessage(event) {
+    onDisconnect(event) {
+        alert("Unexpected disconnection from server! Error: " + event.reason);
+        this.props.history.push("/");
+    }
+
+    onMessage(event) {
         let json = event.data;
         let data = JSON.parse(json);
         // We've received a message from the server, so follow the instruction
@@ -126,3 +141,5 @@ export default class Game extends React.Component {
         );
     }
 }
+
+export default withRouter(Game);
