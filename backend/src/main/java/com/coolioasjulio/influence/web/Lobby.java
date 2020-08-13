@@ -92,8 +92,8 @@ public class Lobby {
     public boolean addPlayer(PlayerEndpoint player) {
         // synchronize to avoid threading issues
         synchronized (playersLock) {
-            // Players can only join lobbies that haven't started yet
             if (!started.get()) {
+                // We're joining a game that hasn't started yet
                 // Names must be unique
                 // This isn't a great way to handle it, since it doesn't indicate to the user exactly why it failed
                 if (players.stream().anyMatch(p -> p.getName().equals(player.getName()))) {
@@ -107,12 +107,14 @@ public class Lobby {
                 players.forEach(p -> p.write(list));
                 return true;
             } else {
+                // Reconnecting to a game that already started
                 System.out.printf("%s is trying to reconnect to %s...", player.getName(), code);
+                // Iterate through the players and find one that matches this name
                 for (int i = 0; i < players.size(); i++) {
                     PlayerEndpoint playerEndpoint = players.get(i);
                     if (game != null && !playerEndpoint.isConnected() && playerEndpoint.getName().equals(player.getName())) {
-                        players.set(i, player);
-                        game.playerReconnected(player);
+                        players.set(i, player); // Replace the old endpoint with the new one
+                        game.playerReconnected(player); // signal to the game that this player has reconnected
                         System.out.println("Success!");
                         return true;
                     }

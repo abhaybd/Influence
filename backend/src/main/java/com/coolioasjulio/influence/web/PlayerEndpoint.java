@@ -3,7 +3,6 @@ package com.coolioasjulio.influence.web;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
@@ -49,6 +48,7 @@ public class PlayerEndpoint {
             lobby.removePlayer(this);
         }
 
+        // Interrupt all threads that are currently waiting on the message queue
         readingThreads.forEach(Thread::interrupt);
     }
 
@@ -59,8 +59,8 @@ public class PlayerEndpoint {
     }
 
     @OnError
-    public void onError(Session session, Throwable throwable) {
-        // TODO: not gonna lie, no idea what to do here
+    public void onError(Throwable throwable) {
+        System.err.printf("Error with %s in lobby %s: %s\n", name, lobby.getCode(), throwable.getMessage());
     }
 
     public synchronized void close() throws IOException {
@@ -72,19 +72,26 @@ public class PlayerEndpoint {
     }
 
     public String readLine() throws InterruptedException {
+        // No-op if this endpoint is disconnected
         if (!connected) return null;
+        // We'll cache the threads that are waiting on the queue
+        // That way, if this socket closes we can interrupt those threads, which would otherwise sleep forever
         Thread thread = Thread.currentThread();
         try {
+            // Cache the thread and wait for data from the queue to become available
             readingThreads.add(thread);
             return messageQueue.take();
         } finally {
+            // The thread is no longer waiting, so remove this thread from the cache
             readingThreads.remove(thread);
         }
     }
 
     public synchronized boolean write(String message) {
+        // No-op if this endpoint is disconnected
         if (isConnected()) {
             try {
+                // Send the message
                 session.getBasicRemote().sendText(message);
                 return true;
             } catch (IOException e) {

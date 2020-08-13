@@ -38,30 +38,38 @@ public class WebGame extends Game {
     public void playerReconnected(PlayerEndpoint newEndpoint) {
         String name = newEndpoint.getName();
         synchronized (endpointMapLock) {
+            // Iterate through all the players to find the player to replace
             for (Map.Entry<Player, PlayerEndpoint> entry : endpointMap.entrySet()) {
                 Player player = entry.getKey();
+                // Make sure the player was disconnected, and has the same name
                 if (!entry.getValue().isConnected() && name.equals(player.getName())) {
-                    endpointMap.put(player, newEndpoint);
-                    List<String> jsonList = cachedJson.get(player.getName());
+                    endpointMap.put(player, newEndpoint); // overwrite the old player with the new one
 
+                    // Send an update message so the client can populate the game information
                     Message message = new Message("update");
                     message.content = gson.toJsonTree(Arrays.stream(players).filter(Objects::nonNull).toArray(Player[]::new));
                     String updateJson = gson.toJson(message);
-                    System.out.printf("Update: %s\n", updateJson);
                     newEndpoint.write(updateJson);
 
-                    System.out.printf("Cached: %s\n", jsonList);
+                    // This is a list of messages that the player missed while disconnected
+                    List<String> jsonList = cachedJson.get(player.getName());
+                    // If the list exists, send all the stored messages
                     if (jsonList != null) {
                         boolean success = true;
-                        for (String json : jsonList) {
+                        // Iterate through the list and send the messages
+                        while (!jsonList.isEmpty()) {
+                            // Remove messages as we send them
+                            String json = jsonList.remove(0);
                             success = newEndpoint.write(json);
-                            if (!success) break;
-                        }
-                        if (success) {
-                            jsonList.clear();
-                            System.out.println("Wrote cached json!");
+                            // If we failed to send this message, stop reconnecting
+                            if (!success) {
+                                // Add back the message that didn't send
+                                jsonList.add(0, json);
+                                break;
+                            }
                         }
                     }
+                    // Inform all players that this player reconnected
                     log("%s has reconnected to the game!", player.getName());
                     return;
                 }
@@ -78,7 +86,6 @@ public class WebGame extends Game {
      */
     public void onPlayerDisconnected(PlayerEndpoint player) {
         // Report to other players that this player disconnected
-        // As of now, the game cannot handle disconnects gracefully
         log("%s disconnected from the game! Waiting for them to reconnect...", player.getName());
     }
 
@@ -102,12 +109,21 @@ public class WebGame extends Game {
         }
     }
 
+    /**
+     * Send a JSON string to the specified player endpoint.
+     * This also caches the sent message if the write doesn't succeed, so it may be retransmitted later.
+     * Regardless if the write succeeds, an entry will be made in <code>cachedJson</code>, creating a new list.
+     *
+     * @param endpoint The endpoint to send to
+     * @param json     The JSON formatted message to send
+     */
     private void write(PlayerEndpoint endpoint, String json) {
         String name = endpoint.getName();
-        cachedJson.putIfAbsent(name, Collections.synchronizedList(new ArrayList<>()));
-        cachedJson.get(name).add(json);
-        if (endpoint.write(json)) {
-            cachedJson.get(name).remove(json);
+        // If there is no entry for this player, create an empty list to store the cached json
+        cachedJson.computeIfAbsent(name, k -> Collections.synchronizedList(new ArrayList<>()));
+        // If the write was unsuccessful, store the json
+        if (!endpoint.write(json)) {
+            cachedJson.get(name).add(json);
         }
     }
 
