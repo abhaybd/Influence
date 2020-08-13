@@ -137,7 +137,6 @@ class App extends React.Component {
 
     onStart() {
         let info = {name: this.store.name, code: this.store.code};
-
         this.pushState("/game", {}, info);
     }
 

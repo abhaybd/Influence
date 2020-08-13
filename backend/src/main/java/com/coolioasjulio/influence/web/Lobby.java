@@ -107,6 +107,17 @@ public class Lobby {
                 players.forEach(p -> p.write(list));
                 return true;
             } else {
+                System.out.printf("%s is trying to reconnect to %s...", player.getName(), code);
+                for (int i = 0; i < players.size(); i++) {
+                    PlayerEndpoint playerEndpoint = players.get(i);
+                    if (game != null && !playerEndpoint.isConnected() && playerEndpoint.getName().equals(player.getName())) {
+                        players.set(i, player);
+                        game.playerReconnected(player);
+                        System.out.println("Success!");
+                        return true;
+                    }
+                }
+                System.out.println("Failed!");
                 return false;
             }
         }
@@ -121,7 +132,7 @@ public class Lobby {
         // synchronize to avoid threading issues
         synchronized (playersLock) {
             // unlike addPlayer(), we won't no-op if the lobby has started. This is because disconnects can happen during the game
-            if (players.remove(player)) {
+            if (players.contains(player)) {
                 System.out.printf("Player %s disconnected from lobby %s!\n", player.getName(), code);
                 // If the game has already started, then tell the game that this player disconnected
                 if (started.get() && game != null) {
@@ -134,7 +145,7 @@ public class Lobby {
             }
 
             // If all players have disconnected, end the lobby
-            if (players.isEmpty()) {
+            if (players.stream().noneMatch(PlayerEndpoint::isConnected)) {
                 System.out.printf("Lobby %s terminated.\n", code);
                 // Remove from the global lobby map
                 lobbyMap.remove(code);
@@ -181,8 +192,6 @@ public class Lobby {
         synchronized (playersLock) {
             players.forEach(p -> p.write(message));
         }
-        // Remove this lobby from the lobby map
-        lobbyMap.remove(code);
         // Play forever until the thread is interrupted
         while (!Thread.interrupted()) {
             PlayerEndpoint[] players = this.players.toArray(new PlayerEndpoint[0]);
@@ -197,6 +206,7 @@ public class Lobby {
             game = new WebGame(players);
             game.playGame();
         }
+        // Close all websockets. This will no-op for already closed sockets.
         for (PlayerEndpoint player : players) {
             try {
                 player.close();
@@ -204,6 +214,7 @@ public class Lobby {
                 e.printStackTrace();
             }
         }
+        lobbyMap.remove(code); // Remove the lobby from the map
         System.out.printf("Thread for lobby %s terminated!\n", code);
     }
 

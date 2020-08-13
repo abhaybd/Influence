@@ -1,5 +1,9 @@
 package com.coolioasjulio.influence.web;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
@@ -12,19 +16,23 @@ public class PlayerEndpoint {
     private Session session;
     private String name;
     private final BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
+    private final Set<Thread> readingThreads = Collections.synchronizedSet(new HashSet<>());
     private Lobby lobby;
+    private volatile boolean connected;
 
     @OnOpen
     public void onOpen(Session session, @PathParam("code") String code, @PathParam("name") String name) throws IOException {
-        System.out.println("Websocket from " + name);
+        System.out.printf("Websocket from %s to lobby %s\n", name, code);
         this.session = session;
         this.name = name;
         lobby = Lobby.getLobby(code);
         // Check if the asked for lobby exists
         if (lobby != null) {
             // Try to add this player to the lobby
+            connected = true;
             if (!lobby.addPlayer(this)) {
                 // If unsuccessful, close the player session
+                connected = false;
                 session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Invalid lobby or name already taken!"));
             }
         } else {
@@ -36,9 +44,12 @@ public class PlayerEndpoint {
     @OnClose
     public void onClose() {
         // If this player has joined a lobby, signal to the lobby that it disconnected
+        connected = false;
         if (lobby != null) {
             lobby.removePlayer(this);
         }
+
+        readingThreads.forEach(Thread::interrupt);
     }
 
     @OnMessage
@@ -56,16 +67,31 @@ public class PlayerEndpoint {
         session.close();
     }
 
-    public String readLine() throws InterruptedException {
-        return messageQueue.take();
+    public boolean isConnected() {
+        return connected;
     }
 
-    public synchronized void write(String message) {
+    public String readLine() throws InterruptedException {
+        if (!connected) return null;
+        Thread thread = Thread.currentThread();
         try {
-            session.getBasicRemote().sendText(message);
-        } catch (IOException e) {
-            e.printStackTrace();
+            readingThreads.add(thread);
+            return messageQueue.take();
+        } finally {
+            readingThreads.remove(thread);
         }
+    }
+
+    public synchronized boolean write(String message) {
+        if (isConnected()) {
+            try {
+                session.getBasicRemote().sendText(message);
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 
     public String getName() {

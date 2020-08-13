@@ -39,7 +39,7 @@ export default class Lobby extends React.Component {
         );
 
         let component = <p>An error occurred! Please create a new lobby or join an existing one!</p>;
-        if (this.state.players.length > 0) {
+        if (this.socket) {
             component = (<div id="centered">
                 <table>
                     <tbody>

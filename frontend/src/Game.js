@@ -2,7 +2,8 @@ import React from "react";
 import {createSocket} from "./App";
 import queryString from "query-string";
 import {withRouter} from "react-router";
-//game 
+
+//game
 class Game extends React.Component {
     constructor(props) {
         super(props);
@@ -11,19 +12,24 @@ class Game extends React.Component {
         this.onDisconnect = this.onDisconnect.bind(this);
         this.getLocalPlayer = this.getLocalPlayer.bind(this);
 
-        if (props.socket) {
-            this.socket = props.socket;
-            this.localPlayerName = props.localPlayer;
+        this.state = {players: props.players ?? [], choices: [], message: "", log: ["Started game!"]}
+
+        window.onbeforeunload = () => true; // block refreshes
+    }
+
+    componentDidMount() {
+        console.log("Game mounted!");
+        if (this.props.socket) {
+            this.socket = this.props.socket;
+            this.localPlayerName = this.props.localPlayer;
         } else {
             let args = queryString.parse(this.props.location.search);
             this.socket = createSocket(args.name, args.code, this.onDisconnect);
+            this.localPlayerName = args.name;
         }
-
-        this.state = {players: props.players ?? [], choices: [], message: "", log: ["Started game!"]}
 
         // Register the onmessage event handler for the websocket
         this.socket.onmessage = this.onMessage;
-        window.onbeforeunload = () => true; // block refreshes
     }
 
     onDisconnect(event) {
