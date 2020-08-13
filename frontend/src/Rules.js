@@ -30,33 +30,33 @@ export default function Rules(props) {
             <br/><br/>
             <h3>Influences</h3>
             <u id="captain-color">Captain</u><br/>
-            <hl id="captain-color">STEAL</hl>
-            : Steal 2 coins from a target. Blockable by <hl id="captain-color">Captain</hl> or <hl
-            id="ambassador-color">Ambassador</hl>. Can block <hl id="captain-color">STEAL</hl><br/><br/>
+            <span id="captain-color">STEAL</span>
+            : Steal 2 coins from a target. Blockable by <span id="captain-color">Captain</span> or <span
+            id="ambassador-color">Ambassador</span>. Can block <span id="captain-color">STEAL</span><br/><br/>
 
             <u id="assassin-color">Assassin</u><br/>
-            <hl id="assassin-color">ASSASSINATE</hl>
-            : Pay 3 coins to choose a target to assassinate (target loses an influence). <hl
+            <span id="assassin-color">ASSASSINATE</span>
+            : Pay 3 coins to choose a target to assassinate (target loses an influence). <span
             id="contessa-color">Blockable by
-            Contessa.</hl><br/><br/>
+            Contessa.</span><br/><br/>
 
             <u id="duke-color">Duke</u><br/>
-            <hl id="duke-color">TAX</hl>
+            <span id="duke-color">TAX</span>
             : Collect 3 coins from the treasury. Not blockable. Can block Foreign Aid.<br/><br/>
 
             <u id="ambassador-color">Ambassador</u><br/>
-            <hl id="ambassador-color">EXCHANGE</hl>
+            <span id="ambassador-color">EXCHANGE</span>
             : Draw 2 influences into your hand and pick any 2 influences to put back. Not blockable. Can
-            block <hl id="captain-color">STEAL</hl><br/><br/>
+            block <span id="captain-color">STEAL</span><br/><br/>
 
             <u id="contessa-color">Contessa</u><br/>
-            <hl id="contessa-color">BLOCK ASSASSINATION</hl>
-            : Can block <hl id="assassin-color">assassinations</hl>. Not blockable.<br/><br/>
+            <span id="contessa-color">BLOCK ASSASSINATION</span>
+            : Can block <span id="assassin-color">assassinations</span>. Not blockable.<br/><br/>
 
             <h3>Other Actions</h3>
             INCOME: <br/>Collect 1 coins from the treasury.<br/><br/>
 
-            FOREIGN AID: <br/>Collect 2 coins from the treasury. Blockable by <hl id="duke-color">Duke</hl>.<br/><br/>
+            FOREIGN AID: <br/>Collect 2 coins from the treasury. Blockable by <span id="duke-color">Duke</span>.<br/><br/>
 
             COUP: <br/>Pay 7 coins and choose a target to lose an influence. If a player starts their turn with 10
             or more coins, they must Coup. Unblockable.
