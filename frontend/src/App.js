@@ -60,8 +60,7 @@ function MainScreen(props) {
 class App extends React.Component {
     constructor(props) {
         super(props);
-        // Create the initial state
-        this.state = {showRules: false};
+
         // This is where child components can store the info they get (the player name, lobby code, etc)
         this.store = {};
 
@@ -73,18 +72,23 @@ class App extends React.Component {
         this.start = this.start.bind(this);
         this.onStart = this.onStart.bind(this);
         this.toggleRules = this.toggleRules.bind(this);
+        this.pushState = this.pushState.bind(this);
+    }
+
+    pushState(pathname, state = {}) {
+        this.props.history.push({pathname: pathname, state: state});
     }
 
     createForm() {
-        this.props.history.push("/create");
+        this.pushState("/create", {showLobby: false});
     }
 
     joinForm() {
-        this.props.history.push("/join");
+        this.pushState("/join", {showLobby: false});
     }
 
     mainScreen() {
-        this.props.history.push("/");
+        this.pushState("/");
     }
 
     showLobby() {
@@ -108,7 +112,7 @@ class App extends React.Component {
             alert("The server disconnected unexpectedly!");
         }
         this.socket = socket;
-        this.props.history.push("/lobby");
+        this.pushState(this.props.location.pathname, {showLobby: true});
     }
 
     start() {
@@ -125,42 +129,47 @@ class App extends React.Component {
     }
 
     onStart() {
-        this.props.history.push("/game");
+        this.pushState("/game");
     }
 
     toggleRules() {
-        let rules = this.state.showRules;
-        this.setState({showRules: !rules});
+        const currShow = this.props.location.state?.showRules || false;
+        this.pushState(this.props.location.pathname, {showRules: !currShow});
     }
 
     render() {
         const Header = () => <div id="header"><h1>INFLUENCE</h1><br/>A Game of Deception</div>
 
+        const showRules = this.props.location.state?.showRules || false;
+        const showLobby = this.props.location.state?.showLobby || false;
+
         // Render the app and the content
         return (
             <div className="App">
                 <header className="App-header">
-                    {this.state.showRules ? <Rules back={this.toggleRules}/> : null}
+                    {showRules ? <Rules back={this.toggleRules}/> : null}
                     <div id="rules-button" onClick={this.toggleRules}>
-                        <u>{this.state.showRules ? "Hide" : "Show"} Rules</u></div>
+                        <u>{showRules ? "Hide" : "Show"} Rules</u></div>
                     <Switch>
                         <Route exact path="/" component={Header}/>
                         <Route path="/create" component={Header}/>
                         <Route path="/join" component={Header}/>
-                        <Route path="/lobby" component={Header}/>
                     </Switch>
                     <Switch>
                         <Route exact path="/">
                             <MainScreen createForm={this.createForm} joinForm={this.joinForm}/>
                         </Route>
                         <Route path="/create">
-                            <CreateForm store={this.store} main={this.mainScreen} lobby={this.showLobby}/>
+                            {showLobby ?
+                                <Lobby socket={this.socket} start={this.start} onStart={this.onStart}
+                                       code={this.store.code}/>
+                                : <CreateForm store={this.store} main={this.mainScreen} lobby={this.showLobby}/>}
                         </Route>
                         <Route path="/join">
-                            <JoinForm store={this.store} main={this.mainScreen} lobby={this.showLobby}/>
-                        </Route>
-                        <Route path="/lobby">
-                            <Lobby socket={this.socket} start={this.start} onStart={this.onStart} code={this.store.code}/>
+                            {showLobby ?
+                                <Lobby socket={this.socket} start={this.start} onStart={this.onStart}
+                                       code={this.store.code}/>
+                                : <JoinForm store={this.store} main={this.mainScreen} lobby={this.showLobby}/>}
                         </Route>
                         <Route path="/game">
                             <Game players={[]} socket={this.socket} localPlayer={this.store.name}/>
