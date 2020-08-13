@@ -88,12 +88,13 @@ class App extends React.Component {
 
         // This is where child components can store the info they get (the player name, lobby code, etc)
         this.store = {};
+        this.showLobby = false;
 
         // Bind methods to this instance
         this.createForm = this.createForm.bind(this);
         this.joinForm = this.joinForm.bind(this);
         this.mainScreen = this.mainScreen.bind(this);
-        this.showLobby = this.showLobby.bind(this);
+        this.lobby = this.lobby.bind(this);
         this.start = this.start.bind(this);
         this.onStart = this.onStart.bind(this);
         this.toggleRules = this.toggleRules.bind(this);
@@ -107,12 +108,14 @@ class App extends React.Component {
 
     createForm() {
         // go to the create form, hiding the lobby
-        this.pushState("/create", {showLobby: false});
+        this.showLobby = false;
+        this.pushState("/create");
     }
 
     joinForm() {
         // go to the join form, hiding the lobby
-        this.pushState("/join", {showLobby: false});
+        this.showLobby = false;
+        this.pushState("/join");
     }
 
     mainScreen() {
@@ -120,11 +123,12 @@ class App extends React.Component {
         this.pushState("/");
     }
 
-    showLobby() {
+    lobby() {
         // Create a websocket and connect to the server
         this.socket = createSocket(this.store.name, this.store.code);
         // Don't change the current location, but change the current state to show the lobby
-        this.pushState(this.props.location.pathname, {showLobby: true});
+        this.pushState(this.props.location.pathname);
+        this.showLobby = true;
     }
 
     start() {
@@ -157,7 +161,7 @@ class App extends React.Component {
         const Header = () => <div id="header"><h1>INFLUENCE</h1><br/>A Game of Deception</div>
 
         const showRules = this.props.location.state?.showRules || false;
-        const showLobby = this.props.location.state?.showLobby || false;
+        const showLobby = this.showLobby;
 
         // Render the app and the content
         return (
@@ -179,13 +183,13 @@ class App extends React.Component {
                             {showLobby ?
                                 <Lobby socket={this.socket} start={this.start} onStart={this.onStart}
                                        code={this.store.code}/>
-                                : <CreateForm store={this.store} main={this.mainScreen} lobby={this.showLobby}/>}
+                                : <CreateForm store={this.store} main={this.mainScreen} lobby={this.lobby}/>}
                         </Route>
                         <Route path="/join">
                             {showLobby ?
                                 <Lobby socket={this.socket} start={this.start} onStart={this.onStart}
                                        code={this.store.code}/>
-                                : <JoinForm store={this.store} main={this.mainScreen} lobby={this.showLobby}/>}
+                                : <JoinForm store={this.store} main={this.mainScreen} lobby={this.lobby}/>}
                         </Route>
                         <Route path="/game">
                             <Game players={[]} socket={this.socket} localPlayer={this.store.name}/>
