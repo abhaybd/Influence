@@ -106,19 +106,24 @@ class App extends React.Component {
     }
 
     createForm() {
+        // go to the create form, hiding the lobby
         this.pushState("/create", {showLobby: false});
     }
 
     joinForm() {
+        // go to the join form, hiding the lobby
         this.pushState("/join", {showLobby: false});
     }
 
     mainScreen() {
+        // go to the main screen
         this.pushState("/");
     }
 
     showLobby() {
+        // Create a websocket and connect to the server
         this.socket = createSocket(this.store.name, this.store.code);
+        // Don't change the current location, but change the current state to show the lobby
         this.pushState(this.props.location.pathname, {showLobby: true});
     }
 
@@ -136,13 +141,16 @@ class App extends React.Component {
     }
 
     onStart() {
+        // We're starting the game, so add the name and code to the url as parameters
+        // This will allow the player to reconnect if they disconnect later
         let info = {name: this.store.name, code: this.store.code};
         this.pushState("/game", {}, info);
     }
 
     toggleRules() {
-        const currShow = this.props.location.state?.showRules || false;
-        this.pushState(this.props.location.pathname, {showRules: !currShow});
+        // Don't change the location, just toggle the rules state
+        const currShowRules = this.props.location.state?.showRules || false;
+        this.pushState(this.props.location.pathname, {showRules: !currShowRules});
     }
 
     render() {
