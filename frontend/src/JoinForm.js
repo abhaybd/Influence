@@ -1,12 +1,13 @@
 import React from "react";
-import { doPost } from "./App";
-import { ReactComponent as BackIcon } from "./back.svg";
+import {createSocket, doPost} from "./App";
+import {ReactComponent as BackIcon} from "./back.svg";
+import Lobby from "./Lobby";
 //Join Game
 export default class JoinForm extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = { name: '', code: '' };
+        this.state = {name: '', code: '', showLobby: false};
 
         this.nameChange = this.nameChange.bind(this);
         this.codeChange = this.codeChange.bind(this);
@@ -30,12 +31,14 @@ export default class JoinForm extends React.Component {
         // Only submit the create request if there is a valid name and code
         if (code.length > 0 && name.length > 0) {
             // Use an info request to check if the supplied lobby exists
+            let comp = this;
             doPost("exists", code, function (data) {
                 if (data.content) {
                     // If the lobby exists, save the code and name for later
                     props.store.code = code;
                     props.store.name = name;
-                    props.lobby(); // Render the lobby screen
+                    props.store.socket = createSocket(name, code);
+                    comp.setState({showLobby: true}); // render the lobby within this component
                 } else {
                     alert("Invalid room code!"); // Tell the player that the lobby doesn't exist
                 }
@@ -44,6 +47,10 @@ export default class JoinForm extends React.Component {
     }
 
     render() {
+        if (this.state.showLobby) {
+            return <Lobby socket={this.props.store.socket} start={this.props.start} onStart={this.props.onStart}
+                          code={this.props.store.code} main={this.props.main}/>
+        }
         return (
             <form onSubmit={this.handleSubmit}>
                 <table className="form-table">

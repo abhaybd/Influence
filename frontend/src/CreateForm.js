@@ -1,12 +1,13 @@
 import React from "react";
 import {ReactComponent as BackIcon} from './back.svg';
-import {doPost} from "./App";
+import {createSocket, doPost} from "./App";
+import Lobby from "./Lobby";
 //create Game
 export default class CreateForm extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {name: ''};
+        this.state = {name: '', showLobby: false};
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -23,17 +24,23 @@ export default class CreateForm extends React.Component {
         if (this.state.name.length > 0) {
             this.props.store.name = this.state.name; // Store the player name for use in a later component
             let props = this.props;
+            let comp = this;
 
             // Use an action request to create a new lobby
             doPost("create", null, function (data) {
                 console.log(data);
                 props.store.code = data.content;
-                props.lobby(); // Change the app state to render the lobby screen
+                props.store.socket = createSocket(props.store.name, props.store.code);
+                comp.setState({showLobby: true}); // render the lobby within this component
             });
         }
     }
 
     render() {
+        if (this.state.showLobby) {
+            return <Lobby socket={this.props.store.socket} start={this.props.start} onStart={this.props.onStart}
+                          code={this.props.store.code} main={this.props.main}/>
+        }
         return (
             <form onSubmit={this.handleSubmit}>
                 <table className="form-table">

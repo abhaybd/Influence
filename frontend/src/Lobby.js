@@ -1,11 +1,13 @@
 import React from "react";
+import {ReactComponent as CopyIcon} from "./copy.svg";
+import {CopyToClipboard} from "react-copy-to-clipboard/lib/Component";
 
 export default class Lobby extends React.Component {
     constructor(props) {
         super(props);
         this.state = {players: []}
 
-        if (props.socket !== undefined) {
+        if (props.socket) {
             this.socket = props.socket;
 
             // Register the onmessage event handler for the websocket
@@ -34,11 +36,16 @@ export default class Lobby extends React.Component {
         // Map a player to a row in a table to display
         const Row = ({player}) => (
             <tr>
-                <td>{player}</td>
+                <td colSpan="2">{player}</td>
             </tr>
         );
 
-        let component = <p>An error occurred! Please create a new lobby or join an existing one!</p>;
+        let component = (
+            <div>
+                <p>An error occurred! Please create a new lobby or join an existing one!</p>
+                <button type="button" className="form-button" onClick={this.props.main}>Go Back</button>
+            </div>
+        );
         // If the socket exists, we're connected to the lobby. Otherwise, show an error message.
         if (this.socket) {
             component = (
@@ -47,14 +54,17 @@ export default class Lobby extends React.Component {
                         <tbody>
                         {this.state.players.map((player, i) => (<Row player={player} key={i}/>))}
                         <tr>
-                            <td>
+                            <td colSpan="2">
                                 <button type="button" className="form-button" onClick={this.props.start}>Start
                                 </button>
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                Code: {this.props.code}
+                                Code: <span id="lobby-code">{this.props.code}</span>
+                            </td>
+                            <td>
+                                <CopyToClipboard text={this.props.code}><button id="copy-button"><CopyIcon/></button></CopyToClipboard>
                             </td>
                         </tr>
                         </tbody>

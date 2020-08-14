@@ -69,6 +69,7 @@ public class Lobby {
     private final Object playersLock = new Object();
     private final AtomicBoolean started;
     private volatile WebGame game;
+    private volatile boolean shouldClose = false;
     private Thread gameThread;
 
     private Lobby(String code) {
@@ -77,8 +78,32 @@ public class Lobby {
         players = new ArrayList<>();
     }
 
+    public boolean shouldClose() {
+        return shouldClose;
+    }
+
     public String getCode() {
         return code;
+    }
+
+    /**
+     * Get the number of players in this lobby.
+     *
+     * @return The number of connected players.
+     */
+    public int numPlayers() {
+        synchronized (playersLock) {
+            return players.size();
+        }
+    }
+
+    /**
+     * Check if this lobby has been started.
+     *
+     * @return True if the lobby has started, false otherwise.
+     */
+    public boolean isStarted() {
+        return started.get();
     }
 
     /**
@@ -151,8 +176,10 @@ public class Lobby {
                 System.out.printf("Lobby %s terminated.\n", code);
                 // Remove from the global lobby map
                 lobbyMap.remove(code);
+                shouldClose = true;
                 // Terminate the game thread, if it exists
                 if (gameThread != null) {
+                    System.out.printf("Interrupting game thread for %s\n", code);
                     gameThread.interrupt();
                 }
             }
@@ -205,7 +232,7 @@ public class Lobby {
                 players[index] = temp;
             }
             // Play a new game
-            game = new WebGame(players);
+            game = new WebGame(this, players);
             game.playGame();
         }
         // Close all websockets. This will no-op for already closed sockets.
@@ -218,25 +245,5 @@ public class Lobby {
         }
         lobbyMap.remove(code); // Remove the lobby from the map
         System.out.printf("Thread for lobby %s terminated!\n", code);
-    }
-
-    /**
-     * Get the number of players in this lobby.
-     *
-     * @return The number of connected players.
-     */
-    public int numPlayers() {
-        synchronized (playersLock) {
-            return players.size();
-        }
-    }
-
-    /**
-     * Check if this lobby has been started.
-     *
-     * @return True if the lobby has started, false otherwise.
-     */
-    public boolean isStarted() {
-        return started.get();
     }
 }
