@@ -38,7 +38,7 @@ function doPost(type, code, callback) {
     http.send(body);
 }
 
-function createSocket(name, code, onclose=null) {
+function createSocket(name, code, onclose = null) {
     // This assembles the websocket uri
     // Essentially, change the protocol from http to ws, and direct the websocket to port 8080
     let loc = window.location;
@@ -88,47 +88,35 @@ class App extends React.Component {
 
         // This is where child components can store the info they get (the player name, lobby code, etc)
         this.store = {};
-        this.showLobby = false;
 
         // Bind methods to this instance
         this.createForm = this.createForm.bind(this);
         this.joinForm = this.joinForm.bind(this);
         this.mainScreen = this.mainScreen.bind(this);
-        this.lobby = this.lobby.bind(this);
         this.start = this.start.bind(this);
         this.onStart = this.onStart.bind(this);
         this.toggleRules = this.toggleRules.bind(this);
         this.pushState = this.pushState.bind(this);
     }
 
-    pushState(pathname, state = {}, search={}) {
+    pushState(pathname, state = {}, search = {}) {
         let searchString = "?" + queryString.stringify(search);
-        this.props.history.push({pathname: pathname, state: state, search:searchString});
+        this.props.history.push({pathname: pathname, state: state, search: searchString});
     }
 
     createForm() {
-        // go to the create form, hiding the lobby
-        this.showLobby = false;
+        // go to the create form
         this.pushState("/create");
     }
 
     joinForm() {
-        // go to the join form, hiding the lobby
-        this.showLobby = false;
+        // go to the join form
         this.pushState("/join");
     }
 
     mainScreen() {
         // go to the main screen
         this.pushState("/");
-    }
-
-    lobby() {
-        // Create a websocket and connect to the server
-        this.socket = createSocket(this.store.name, this.store.code);
-        // Don't change the current location, but change the lobby flag
-        this.showLobby = true;
-        this.pushState(this.props.location.pathname);
     }
 
     start() {
@@ -161,7 +149,6 @@ class App extends React.Component {
         const Header = () => <div id="header"><h1>INFLUENCE</h1><br/>A Game of Deception</div>
 
         const showRules = this.props.location.state?.showRules || false;
-        const showLobby = this.showLobby;
 
         // Render the app and the content
         return (
@@ -180,19 +167,15 @@ class App extends React.Component {
                             <MainScreen createForm={this.createForm} joinForm={this.joinForm}/>
                         </Route>
                         <Route path="/create">
-                            {showLobby ?
-                                <Lobby socket={this.socket} start={this.start} onStart={this.onStart}
-                                       code={this.store.code} main={this.mainScreen}/>
-                                : <CreateForm store={this.store} main={this.mainScreen} lobby={this.lobby}/>}
+                            <CreateForm store={this.store} main={this.mainScreen} start={this.start}
+                                        onStart={this.onStart}/>
                         </Route>
                         <Route path="/join">
-                            {showLobby ?
-                                <Lobby socket={this.socket} start={this.start} onStart={this.onStart}
-                                       code={this.store.code} main={this.mainScreen}/>
-                                : <JoinForm store={this.store} main={this.mainScreen} lobby={this.lobby}/>}
+                            <JoinForm store={this.store} main={this.mainScreen} start={this.start}
+                                      onStart={this.onStart}/>
                         </Route>
                         <Route path="/game">
-                            <Game players={[]} socket={this.socket} localPlayer={this.store.name}/>
+                            <Game players={[]} socket={this.store.socket} localPlayer={this.store.name}/>
                         </Route>
                     </Switch>
                 </header>
