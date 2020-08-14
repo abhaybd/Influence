@@ -5,7 +5,7 @@ export default class Lobby extends React.Component {
         super(props);
         this.state = {players: []}
 
-        if (props.socket !== undefined) {
+        if (props.socket) {
             this.socket = props.socket;
 
             // Register the onmessage event handler for the websocket
@@ -38,7 +38,12 @@ export default class Lobby extends React.Component {
             </tr>
         );
 
-        let component = <p>An error occurred! Please create a new lobby or join an existing one!</p>;
+        let component = (
+            <div>
+                <p>An error occurred! Please create a new lobby or join an existing one!</p>
+                <button type="button" className="form-button" onClick={this.props.main}>Go Back</button>
+            </div>
+        );
         // If the socket exists, we're connected to the lobby. Otherwise, show an error message.
         if (this.socket) {
             component = (

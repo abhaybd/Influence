@@ -126,9 +126,9 @@ class App extends React.Component {
     lobby() {
         // Create a websocket and connect to the server
         this.socket = createSocket(this.store.name, this.store.code);
-        // Don't change the current location, but change the current state to show the lobby
-        this.pushState(this.props.location.pathname);
+        // Don't change the current location, but change the lobby flag
         this.showLobby = true;
+        this.pushState(this.props.location.pathname);
     }
 
     start() {
@@ -182,13 +182,13 @@ class App extends React.Component {
                         <Route path="/create">
                             {showLobby ?
                                 <Lobby socket={this.socket} start={this.start} onStart={this.onStart}
-                                       code={this.store.code}/>
+                                       code={this.store.code} main={this.mainScreen}/>
                                 : <CreateForm store={this.store} main={this.mainScreen} lobby={this.lobby}/>}
                         </Route>
                         <Route path="/join">
                             {showLobby ?
                                 <Lobby socket={this.socket} start={this.start} onStart={this.onStart}
-                                       code={this.store.code}/>
+                                       code={this.store.code} main={this.mainScreen}/>
                                 : <JoinForm store={this.store} main={this.mainScreen} lobby={this.lobby}/>}
                         </Route>
                         <Route path="/game">
