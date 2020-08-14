@@ -224,6 +224,12 @@ input[type=submit]:hover {
     width: 300px;
 }
 
+#copy-button {
+    height: 40px;
+    width: 40px;
+    padding: 5px -2px 5px -2px;
+}
+
 #create-name {
     font-size: 20px;
     font-weight: bold;

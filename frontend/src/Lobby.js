@@ -1,4 +1,6 @@
 import React from "react";
+import {ReactComponent as CopyIcon} from "./copy.svg";
+import {CopyToClipboard} from "react-copy-to-clipboard/lib/Component";
 
 export default class Lobby extends React.Component {
     constructor(props) {
@@ -34,7 +36,7 @@ export default class Lobby extends React.Component {
         // Map a player to a row in a table to display
         const Row = ({player}) => (
             <tr>
-                <td>{player}</td>
+                <td colSpan="2">{player}</td>
             </tr>
         );
 
@@ -52,14 +54,17 @@ export default class Lobby extends React.Component {
                         <tbody>
                         {this.state.players.map((player, i) => (<Row player={player} key={i}/>))}
                         <tr>
-                            <td>
+                            <td colSpan="2">
                                 <button type="button" className="form-button" onClick={this.props.start}>Start
                                 </button>
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                Code: {this.props.code}
+                                Code: <span id="lobby-code">{this.props.code}</span>
+                            </td>
+                            <td>
+                                <CopyToClipboard text={this.props.code}><button id="copy-button"><CopyIcon/></button></CopyToClipboard>
                             </td>
                         </tr>
                         </tbody>
