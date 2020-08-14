@@ -20,10 +20,12 @@ public class WebGame extends Game {
     private final Object endpointMapLock = new Object();
     private final ExecutorService executorService;
     private final Gson gson;
+    private final Lobby lobby;
 
-    public WebGame(PlayerEndpoint[] endpoints) {
+    public WebGame(Lobby lobby, PlayerEndpoint[] endpoints) {
         // Map the endpoints to their names and populate the player array
         super(Arrays.stream(endpoints).map(PlayerEndpoint::getName).toArray(String[]::new));
+        this.lobby = lobby;
         // Create and populate a map from player objects to endpoints, so we can access the communication
         endpointMap = Collections.synchronizedMap(new HashMap<>());
         for (int i = 0; i < players.length; i++) {
@@ -201,13 +203,14 @@ public class WebGame extends Game {
         String responseJson = null;
         do {
             try {
+                if (Thread.interrupted()) {
+                    throw new InterruptedException();
+                }
                 PlayerEndpoint endpoint = endpointMap.get(player);
                 responseJson = endpoint.readLine();
             } catch (InterruptedException e) {
-                synchronized (endpointMapLock) {
-                    if (endpointMap.values().stream().noneMatch(PlayerEndpoint::isConnected)) {
-                        throw e;
-                    }
+                if (lobby.shouldClose()) {
+                    throw e;
                 }
             }
         } while (responseJson == null);
