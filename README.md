@@ -19,6 +19,7 @@ The project is being hosted on AWS Elastic Beanstalk.
   - This covers brief Wi-Fi disconnections, reloading the page, etc.
 - Painless lobby creation 
   - Instead of a mess of random characters, join codes are a few words, making it much easier to share
+  - Instantly copy the join code to the clipboard for fast sharing
 - Easy access to rules
   - A full writeup of the rules is accessible from anywhere in the game
 - Implemented true to the rules
