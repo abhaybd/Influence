@@ -41,8 +41,8 @@ export default class Lobby extends React.Component {
         );
 
         let component = (
-            <div>
-                <p>An error occurred! Please create a new lobby or join an existing one!</p>
+            <div id="centered">
+                <p>You should never see this screen! If you do, please file an issue <a href="https://github.com/abhaybd/Influence/issues">here!</a></p>
                 <button type="button" className="form-button" onClick={this.props.main}>Go Back</button>
             </div>
         );
