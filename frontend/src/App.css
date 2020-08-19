@@ -130,10 +130,11 @@ input[type=submit]:hover {
 }
 
 #centered {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -40%);
 }
 
 #rules-box {
@@ -222,6 +223,11 @@ input[type=submit]:hover {
     padding: 30px 20px 30px 20px;
     text-align: center;
     width: 300px;
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -40%);
 }
 
 #copy-button {
@@ -248,7 +254,13 @@ input[type=submit]:hover {
 
 .buttons {
     width: 15%;
+    min-width: 15ch;
     table-layout: fixed;
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -40%);
 }
 
 .buttons tr {
@@ -263,7 +275,7 @@ input[type=submit]:hover {
 
 #header {
     font-family: 'Alata', Arial, sans-serif;
-    padding: 0 0 20vh 0;
+    /*padding: 0 0 20vh 0;*/
 }
 
 h1 {

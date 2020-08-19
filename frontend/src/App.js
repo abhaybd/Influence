@@ -4,7 +4,6 @@ import {Switch, Route, withRouter} from "react-router-dom";
 import "./App.css";
 import JoinForm from "./JoinForm";
 import CreateForm from "./CreateForm";
-import Lobby from "./Lobby";
 import Game from "./Game";
 import Rules from "./Rules";
 import queryString from "query-string";
@@ -38,7 +37,7 @@ function doPost(type, code, callback) {
     http.send(body);
 }
 
-function createSocket(name, code, onclose = null) {
+function createSocket(name, code, onopen = null, onclose = null) {
     // This assembles the websocket uri
     // Essentially, change the protocol from http to ws, and direct the websocket to port 8080
     let loc = window.location;
@@ -51,7 +50,7 @@ function createSocket(name, code, onclose = null) {
     newUri = newUri.replace("3000", "8080");
     console.log(newUri);
     let socket = new WebSocket(newUri); // Open the websocket connection
-    socket.onopen = function (event) {
+    socket.onopen = onopen ?? function (event) {
         console.log("Opened!");
     };
     socket.onclose = onclose ?? function (event) {

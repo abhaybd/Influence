@@ -2,12 +2,13 @@ import React from "react";
 import {createSocket, doPost} from "./App";
 import {ReactComponent as BackIcon} from "./back.svg";
 import Lobby from "./Lobby";
+
 //Join Game
-export default class JoinForm extends React.Component {
+class JoinForm extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {name: '', code: '', showLobby: false};
+        this.state = {name: "", code: "", showLobby: false};
 
         this.nameChange = this.nameChange.bind(this);
         this.codeChange = this.codeChange.bind(this);
@@ -30,15 +31,24 @@ export default class JoinForm extends React.Component {
         let props = this.props;
         // Only submit the create request if there is a valid name and code
         if (code.length > 0 && name.length > 0) {
-            // Use an info request to check if the supplied lobby exists
             let comp = this;
+
+            // Use an info request to check if the supplied lobby exists
             doPost("exists", code, function (data) {
                 if (data.content) {
                     // If the lobby exists, save the code and name for later
                     props.store.code = code;
                     props.store.name = name;
-                    props.store.socket = createSocket(name, code);
-                    comp.setState({showLobby: true}); // render the lobby within this component
+                    props.store.socket = createSocket(name, code,
+                        function (event) {
+                            comp.setState({showLobby: true}); // render the lobby within this component
+                        },
+                        function (event) {
+                            // Show the error and go back to the join screen
+                            comp.setState({showLobby: false, name: ""});
+                            alert("Error: " + event.reason);
+                        }
+                    );
                 } else {
                     alert("Invalid room code!"); // Tell the player that the lobby doesn't exist
                 }
@@ -93,3 +103,5 @@ export default class JoinForm extends React.Component {
         );
     }
 }
+
+export default JoinForm;

@@ -1,6 +1,13 @@
 <component name="ArtifactManager">
   <artifact type="exploded-war" name="Influence:war exploded">
-    <output-path>$PROJECT_DIR$/out/artifacts/Influence_war_exploded</output-path>
+    <output-path>$PROJECT_DIR$/target/ROOT</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <exploded>true</exploded>
+        <module>Influence</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
     <root id="root">
       <element id="directory" name="WEB-INF">
         <element id="directory" name="classes">
@@ -8,7 +15,11 @@
         </element>
         <element id="directory" name="lib">
           <element id="library" level="project" name="Maven: com.google.code.gson:gson:2.8.0" />
+          <element id="library" level="project" name="Maven: javax:javaee-web-api:8.0.1" />
         </element>
+      </element>
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/target/ROOT/META-INF/MANIFEST.MF" />
       </element>
       <element id="javaee-facet-resources" facet="Influence/web/Web" />
     </root>
