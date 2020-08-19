@@ -34,21 +34,30 @@ class JoinForm extends React.Component {
             let comp = this;
 
             // Use an info request to check if the supplied lobby exists
-            doPost("exists", code, function (data) {
-                if (data.content) {
-                    // If the lobby exists, save the code and name for later
-                    props.store.code = code;
-                    props.store.name = name;
-                    props.store.socket = createSocket(name, code,
-                        function (event) {
-                            comp.setState({showLobby: true}); // render the lobby within this component
-                        },
-                        function (event) {
-                            // Show the error and go back to the join screen
-                            comp.setState({showLobby: false, name: ""});
-                            alert("Error: " + event.reason);
+            doPost({type: "exists", code: code}, function (data) {
+                if (data.content === true) {
+                    // If the lobby exists, check if there is already a player in that lobby
+                    doPost({type: "playerInLobby", code: code, content: name}, function (data) {
+                        if (data.content === false) {
+                            // If no such player already exists, store the code and name
+                            // This isn't fool proof. A player may join with this name between this POST request and the WS connection.
+                            // This site should handle it gracefully.
+                            props.store.code = code;
+                            props.store.name = name;
+                            props.store.socket = createSocket(name, code,
+                                function (event) {
+                                    comp.setState({showLobby: true}); // render the lobby within this component
+                                },
+                                function (event) {
+                                    // Show the error and go back to the join screen
+                                    comp.setState({showLobby: false, name: ""});
+                                    alert("Error: " + event.reason);
+                                }
+                            );
+                        } else {
+                            alert("That name is already taken! Please choose another!");
                         }
-                    );
+                    });
                 } else {
                     alert("Invalid room code!"); // Tell the player that the lobby doesn't exist
                 }

@@ -8,29 +8,38 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class LobbyServlet extends HttpServlet {
+
+    private static final String TYPE_LOBBY_STARTED = "started";
+    private static final String TYPE_LOBBY_EXISTS = "exists";
+    private static final String TYPE_NUM_PLAYERS_IN_LOBBY = "numPlayers";
+    private static final String TYPE_IS_PLAYER_IN_LOBBY = "playerInLobby";
+    private static final String TYPE_CREATE_LOBBY = "create";
+    private static final String TYPE_START_LOBBY = "start";
+
     @Override
     protected void doPost(HttpServletRequest httpReq, HttpServletResponse httpResp) throws IOException {
         // Only json requests are accepted
         if ("application/json".equalsIgnoreCase(httpReq.getContentType())) {
             // Parse the json request
             Gson gson = new Gson();
-            ActionReq actionReq = gson.fromJson(httpReq.getReader(), ActionReq.class);
-            String type = actionReq.type;
+            Request request = gson.fromJson(httpReq.getReader(), Request.class);
+            String type = request.type;
             // All requests must define a request type
             if (type != null) {
-                String code = actionReq.code;
+                String code = request.code;
                 Response<?> response = null;
                 // Depending on the request type, it's either an info request or an action request
                 switch (type) {
-                    case "started":
-                    case "exists":
-                    case "numPlayers":
-                        response = processInfo(httpResp, type, code);
+                    case TYPE_LOBBY_STARTED:
+                    case TYPE_LOBBY_EXISTS:
+                    case TYPE_NUM_PLAYERS_IN_LOBBY:
+                    case TYPE_IS_PLAYER_IN_LOBBY:
+                        response = processInfo(httpResp, request);
                         break;
 
-                    case "create":
-                    case "start":
-                        response = processAction(httpResp, type, code);
+                    case TYPE_CREATE_LOBBY:
+                    case TYPE_START_LOBBY:
+                        response = processAction(httpResp, request);
                         break;
 
                     default:
@@ -55,18 +64,20 @@ public class LobbyServlet extends HttpServlet {
         }
     }
 
-    private Response<?> processAction(HttpServletResponse httpResp, String action, String code) throws IOException {
+    private Response<?> processAction(HttpServletResponse httpResp, Request request) throws IOException {
         Response<?> response = null;
         Lobby lobby;
+        String action = request.type;
+        String code = request.code;
         switch (action) {
-            case "create":
+            case TYPE_CREATE_LOBBY:
                 // Create a lobby and reply with the lobby code
                 lobby = Lobby.create();
                 response = new Response<>(lobby.getCode());
                 System.out.println("Created lobby: " + lobby.getCode());
                 break;
 
-            case "start":
+            case TYPE_START_LOBBY:
                 // Start an existing lobby
                 lobby = Lobby.getLobby(code);
                 // If the lobby exists and hasn't started, start it now
@@ -78,7 +89,7 @@ public class LobbyServlet extends HttpServlet {
                     }
                 } else {
                     // Report an error code if the lobby doesn't exist or has already started
-                    httpResp.sendError(422);
+                    httpResp.sendError(422, "The lobby may not exist, or it may have already started!");
                 }
                 break;
 
@@ -89,23 +100,36 @@ public class LobbyServlet extends HttpServlet {
         return response;
     }
 
-    private Response<?> processInfo(HttpServletResponse httpResp, String info, String code) throws IOException {
+    private Response<?> processInfo(HttpServletResponse httpResp, Request request) throws IOException {
         Response<?> response = null;
+        String info = request.type;
+        String code = request.code;
+        String content = request.content;
         if (info != null && code != null) {
             // Get the lobby referred to in the request. If this lobby is null, then it doesn't exist.
             Lobby lobby = Lobby.getLobby(code);
             switch (info) {
-                case "started":
+                case TYPE_LOBBY_STARTED:
                     // Check if the lobby exists and if it has started
                     response = new Response<>(lobby != null && lobby.isStarted());
                     break;
 
-                case "exists":
+                case TYPE_IS_PLAYER_IN_LOBBY:
+                    // We need the content key to be defined
+                    if (content != null) {
+                        // Check if the lobby exists and if it has the player
+                        response = new Response<>(lobby != null && lobby.containsPlayer(content));
+                    } else {
+                        httpResp.sendError(400, "playerInLobby request must define a content key!");
+                    }
+                    break;
+
+                case TYPE_LOBBY_EXISTS:
                     // Check if the lobby exists
                     response = new Response<>(lobby != null);
                     break;
 
-                case "numPlayers":
+                case TYPE_NUM_PLAYERS_IN_LOBBY:
                     // Check if the lobby exists, and if so, how many players
                     if (lobby != null) {
                         response = new Response<>(lobby.numPlayers());
@@ -126,9 +150,10 @@ public class LobbyServlet extends HttpServlet {
         return response;
     }
 
-    private static class ActionReq {
+    private static class Request {
         public String type;
         public String code;
+        public String content;
     }
 
     private static class Response<T> {

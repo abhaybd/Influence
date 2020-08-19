@@ -98,6 +98,18 @@ public class Lobby {
     }
 
     /**
+     * Checks if a player with the specified name is in this lobby.
+     *
+     * @param name The name to check for.
+     * @return True if any player in this lobby has the specified name, false otherwise.
+     */
+    public boolean containsPlayer(String name) {
+        synchronized (playersLock) {
+            return players.stream().map(PlayerEndpoint::getName).anyMatch(s -> s.equals(name));
+        }
+    }
+
+    /**
      * Check if this lobby has been started.
      *
      * @return True if the lobby has started, false otherwise.
@@ -121,7 +133,7 @@ public class Lobby {
                 // We're joining a game that hasn't started yet
                 // Names must be unique
                 // This isn't a great way to handle it, since it doesn't indicate to the user exactly why it failed
-                if (players.stream().anyMatch(p -> p.getName().equals(player.getName()))) {
+                if (containsPlayer(player.getName())) {
                     return false;
                 }
                 System.out.printf("Player %s connected to lobby %s!\n", player.getName(), code);

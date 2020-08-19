@@ -28,7 +28,7 @@ class CreateForm extends React.Component {
             let comp = this;
 
             // Use an action request to create a new lobby
-            doPost("create", null, function (data) {
+            doPost({type: "create"}, function (data) {
                 console.log(data);
                 props.store.code = data.content;
                 props.store.socket = createSocket(props.store.name, props.store.code,

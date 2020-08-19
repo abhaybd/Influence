@@ -11,11 +11,10 @@ import queryString from "query-string";
 /**
  * Perform a POST request to the lobby API endpoint. This can either be an info or action request.
  *
- * @param type The type of request.
- * @param code The lobby code, if applicable. May be null if no lobby code is required.
+ * @param content An object representing the content of the POST request
  * @param callback A callback to call once the request succeeds.
  */
-function doPost(type, code, callback) {
+function doPost(content, callback) {
     // Do a POST request
     const http = new XMLHttpRequest();
     http.open("POST", "/lobby");
@@ -33,7 +32,7 @@ function doPost(type, code, callback) {
     }
 
     // Serialize the content and send
-    let body = JSON.stringify({type: type, code: code});
+    let body = JSON.stringify(content);
     http.send(body);
 }
 
@@ -121,12 +120,12 @@ class App extends React.Component {
     start() {
         let code = this.store.code;
         // Use an info request to determine the amount players. If there's enough, start the game
-        doPost("numPlayers", code, function (data) {
+        doPost({type: "numPlayers", code: code}, function (data) {
             if (data.content >= 2) {
                 console.log("Starting!");
                 // Use an action request to start the game
                 // Once the game starts, it'll send an event via websocket to trigger a state change, so we don't do that here
-                doPost("start", code, () => true);
+                doPost({type: "start", code: code}, () => true);
             }
         });
     }

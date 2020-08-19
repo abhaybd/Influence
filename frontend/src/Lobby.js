@@ -55,7 +55,8 @@ export default class Lobby extends React.Component {
                         {this.state.players.map((player, i) => (<Row player={player} key={i}/>))}
                         <tr>
                             <td colSpan="2">
-                                <button type="button" className="form-button" onClick={this.props.start}>Start
+                                <button type="button" className="form-button" onClick={this.props.start}>
+                                    Start
                                 </button>
                             </td>
                         </tr>
@@ -64,7 +65,11 @@ export default class Lobby extends React.Component {
                                 Code: <span id="lobby-code">{this.props.code}</span>
                             </td>
                             <td>
-                                <CopyToClipboard text={this.props.code}><button id="copy-button"><CopyIcon/></button></CopyToClipboard>
+                                <CopyToClipboard text={this.props.code}>
+                                    <button id="copy-button">
+                                        <CopyIcon/>
+                                    </button>
+                                </CopyToClipboard>
                             </td>
                         </tr>
                         </tbody>
