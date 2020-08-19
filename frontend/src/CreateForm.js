@@ -1,6 +1,6 @@
 import React from "react";
-import { ReactComponent as BackIcon } from './back.svg';
-import { createSocket, doPost } from "./App";
+import {ReactComponent as BackIcon} from './back.svg';
+import {createSocket, doPost} from "./App";
 import Lobby from "./Lobby";
 
 //create Game
@@ -8,7 +8,7 @@ class CreateForm extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = { name: '', showLobby: false };
+        this.state = {name: "", showLobby: false};
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -16,7 +16,7 @@ class CreateForm extends React.Component {
 
     handleChange(event) {
         // Only letters allowed, so replace invalid characters with an empty string
-        this.setState({ name: event.target.value.replace(/[^A-Za-z]/g, "") });
+        this.setState({name: event.target.value.replace(/[^A-Za-z]/g, "")});
     }
 
     handleSubmit(event) {
@@ -48,7 +48,7 @@ class CreateForm extends React.Component {
     render() {
         if (this.state.showLobby) {
             return <Lobby socket={this.props.store.socket} start={this.props.start} onStart={this.props.onStart}
-                code={this.props.store.code} main={this.props.main} />
+                          code={this.props.store.code} main={this.props.main}/>
         }
         return (
             <form onSubmit={this.handleSubmit}>
@@ -56,7 +56,7 @@ class CreateForm extends React.Component {
                     <tbody>
                         <tr>
                             <td>
-                                <button id="back" type="button" onClick={this.props.main}><BackIcon /></button>
+                                <button id="back" type="button" onClick={this.props.main}><BackIcon/></button>
                             </td>
                         </tr>
                         <tr>
@@ -67,12 +67,12 @@ class CreateForm extends React.Component {
                         <tr>
                             <td>
                                 <input type="text" value={this.state.name} size='10' placeholder="Aguilar" maxLength="8"
-                                    onChange={this.handleChange} />
+                                       onChange={this.handleChange}/>
                             </td>
                         </tr>
                         <tr>
                             <td colSpan='2'>
-                                <input type="submit" value="Create Lobby" />
+                                <input type="submit" value="Create Lobby"/>
                             </td>
                         </tr>
                     </tbody>

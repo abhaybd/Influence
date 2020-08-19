@@ -40,6 +40,7 @@ sketch
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
+.idea/**/codeStyleConfig.xml
 
 # Gradle
 .idea/**/gradle.xml

@@ -1,7 +1,7 @@
 import React from "react";
-import { createSocket } from "./App";
+import {createSocket} from "./App";
 import queryString from "query-string";
-import { withRouter } from "react-router";
+import {withRouter} from "react-router";
 
 //game
 class Game extends React.Component {
@@ -12,7 +12,7 @@ class Game extends React.Component {
         this.onDisconnect = this.onDisconnect.bind(this);
         this.getLocalPlayer = this.getLocalPlayer.bind(this);
 
-        this.state = { players: props.players ?? [], choices: [], message: "", log: ["Started game!"], playerColor: null }
+        this.state = {players: props.players ?? [], choices: [], message: "", log: ["Started game!"], playerColorMap: null}
 
         window.onbeforeunload = () => true; // block refreshes
     }
@@ -45,12 +45,11 @@ class Game extends React.Component {
             case "update":
                 // This is an update message, so update the player information
 
-                if (this.state.playerColor === null) {
-                    var assignColor = this.assignColors(data.content);
-                    this.setState({ players: data.content, playerColor: assignColor });
-                }
-                else {
-                    this.setState({ players: data.content });
+                if (this.state.playerColorMap === null) {
+                    let colorMap = this.createPlayerColorMap(data.content);
+                    this.setState({players: data.content, playerColorMap: colorMap});
+                } else {
+                    this.setState({players: data.content});
                 }
                 break;
 
@@ -61,13 +60,13 @@ class Game extends React.Component {
 
             case "choice":
                 // We need to prompt the player to make a choice, so display those now
-                this.setState({ choices: data.content, message: data.message });
+                this.setState({choices: data.content, message: data.message});
                 break;
 
             case "stopChoice":
                 // The time for making choices has ended, so stop making a choice
                 // If the player wasn't already making a choice, this doesn't break anything
-                this.setState({ choices: [], message: "Waiting for others..." });
+                this.setState({choices: [], message: "Waiting for others..."});
                 break;
 
             case "log":
@@ -78,7 +77,7 @@ class Game extends React.Component {
                 while (log.length > 5) {
                     log.shift();
                 }
-                this.setState({ log: log })
+                this.setState({log: log})
                 break;
 
             default:
@@ -89,7 +88,7 @@ class Game extends React.Component {
     }
 
     //Assigns Colors to each player for their player card
-    assignColors(players) {
+    createPlayerColorMap(players) {
         const colorList = ["#19D2E8", "#44DFB6", "#77EA83", "#E6D517", "#E8AA14", "#FF5714"];
         let map = {};
         for (let i = 0; i < players.length; i++) {
@@ -111,27 +110,28 @@ class Game extends React.Component {
             }
         }
         // If no such player exists, just return an empty player
-        return { name: "", cards: [], coins: 0 };
+        return {name: "", cards: [], coins: 0};
     }
 
     onChoice(choice) {
         // The player has made a choice, so stop displaying the choices
-        this.setState({ choices: [], message: "Waiting for others..." });
+        this.setState({choices: [], message: "Waiting for others..."});
         this.socket.send(JSON.stringify(choice)); // Send the players choice to the server
     }
 
     render() {
         // Map a player to a JSX element for displaying
-        const Player = ({ player, influence, coins, color }) => (
-            <div className={player === this.localPlayerName ? "local-player-icon" : "player-icon"} style={{ backgroundColor: color }}>
-                <b id="playerText">{player}</b><br />
-                <span id="coinText">Coins: {coins}</span> <br />
+        const Player = ({player, influence, coins, color}) => (
+            <div className={player === this.localPlayerName ? "local-player-icon" : "player-icon"}
+                 style={{backgroundColor: color}}>
+                <b id="playerText">{player}</b><br/>
+                <span id="coinText">Coins: {coins}</span> <br/>
                 <span id="influenceText">Influences: {influence}</span>
             </div>
         );
 
         // Map a choice to a JSX element for displaying
-        const Choice = ({ choice }) => (
+        const Choice = ({choice}) => (
             <button className="game-button" onClick={() => this.onChoice(choice)}>
                 <div className="choice-icon">
                     {choice}
@@ -143,12 +143,13 @@ class Game extends React.Component {
         return (
             <div>
                 <div id="event-log">
-                    {this.state.log.map(line => <div>{line}<br /></div>)}
+                    {this.state.log.map(line => <div>{line}<br/></div>)}
                 </div>
                 <div className="game-container">
                     {this.state.players.map(player => <Player key={player.name} player={player.name}
-                        coins={player.coins}
-                        influence={this.numInfluence(player.cards)} color={this.state.playerColor[player.name]} />)}
+                                                              coins={player.coins}
+                                                              influence={this.numInfluence(player.cards)}
+                                                              color={this.state.playerColorMap[player.name]}/>)}
                 </div>
                 <div className="game-container">
                     {this.getLocalPlayer().cards.map(card => card === null ? null :
@@ -158,7 +159,7 @@ class Game extends React.Component {
                     <strong>{this.state.message}</strong>
                 </div>
                 <div className="game-container">
-                    {this.state.choices.map((choice, i) => <Choice key={i} choice={choice} />)}
+                    {this.state.choices.map((choice, i) => <Choice key={i} choice={choice}/>)}
                 </div>
             </div>
         );
