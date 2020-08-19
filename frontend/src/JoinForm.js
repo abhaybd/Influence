@@ -1,6 +1,6 @@
 import React from "react";
-import {createSocket, doPost} from "./App";
-import {ReactComponent as BackIcon} from "./back.svg";
+import { createSocket, doPost } from "./App";
+import { ReactComponent as BackIcon } from "./back.svg";
 import Lobby from "./Lobby";
 
 //Join Game
@@ -17,11 +17,11 @@ class JoinForm extends React.Component {
 
     nameChange(event) {
         // Only letters allowed, so replace invalid characters with an empty string
-        this.setState({name: event.target.value.replace(/[^A-Za-z]/g, "")});
+        this.setState({ name: event.target.value.replace(/[^A-Za-z]/g, "") });
     }
 
     codeChange(event) {
-        this.setState({code: event.target.value});
+        this.setState({ code: event.target.value });
     }
 
     handleSubmit(event) {
@@ -68,44 +68,44 @@ class JoinForm extends React.Component {
     render() {
         if (this.state.showLobby) {
             return <Lobby socket={this.props.store.socket} start={this.props.start} onStart={this.props.onStart}
-                          code={this.props.store.code} main={this.props.main}/>
+                code={this.props.store.code} main={this.props.main} />
         }
         return (
             <form onSubmit={this.handleSubmit}>
                 <table className="form-table">
                     <tbody>
-                    <tr>
-                        <td>
-                            <button id="back" type="button" onClick={this.props.main}><BackIcon/></button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div id="create-name">What's your name, traveler?</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="text" value={this.state.name} size='10' placeholder="Altaïr" maxLength='12'
-                                   onChange={this.nameChange}/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div id="create-code">Enter Access Code</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="text" value={this.state.code} size='10' placeholder="end-line-game"
-                                   onChange={this.codeChange}/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colSpan='2'>
-                            <input type="submit" value="Join Lobby"/>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td>
+                                <button id="back" type="button" onClick={this.props.main}><BackIcon /></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div id="create-name">What's your name, traveler?</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input type="text" value={this.state.name} size='10' placeholder="Altaïr" maxLength='8'
+                                    onChange={this.nameChange} />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div id="create-code">Enter Access Code</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input type="text" value={this.state.code} size='10' placeholder="end-line-game"
+                                    onChange={this.codeChange} />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colSpan='2'>
+                                <input type="submit" value="Join Lobby" />
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </form>
