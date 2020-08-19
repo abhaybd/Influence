@@ -288,6 +288,7 @@ input[type="submit"]:hover {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -40%);
+    border-radius:10px;
 }
 
 #copy-button {
