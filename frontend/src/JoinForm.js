@@ -2,12 +2,13 @@ import React from "react";
 import { createSocket, doPost } from "./App";
 import { ReactComponent as BackIcon } from "./back.svg";
 import Lobby from "./Lobby";
+
 //Join Game
-export default class JoinForm extends React.Component {
+class JoinForm extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = { name: '', code: '', showLobby: false };
+        this.state = {name: "", code: "", showLobby: false};
 
         this.nameChange = this.nameChange.bind(this);
         this.codeChange = this.codeChange.bind(this);
@@ -30,15 +31,33 @@ export default class JoinForm extends React.Component {
         let props = this.props;
         // Only submit the create request if there is a valid name and code
         if (code.length > 0 && name.length > 0) {
-            // Use an info request to check if the supplied lobby exists
             let comp = this;
-            doPost("exists", code, function (data) {
-                if (data.content) {
-                    // If the lobby exists, save the code and name for later
-                    props.store.code = code;
-                    props.store.name = name;
-                    props.store.socket = createSocket(name, code);
-                    comp.setState({ showLobby: true }); // render the lobby within this component
+
+            // Use an info request to check if the supplied lobby exists
+            doPost({type: "exists", code: code}, function (data) {
+                if (data.content === true) {
+                    // If the lobby exists, check if there is already a player in that lobby
+                    doPost({type: "playerInLobby", code: code, content: name}, function (data) {
+                        if (data.content === false) {
+                            // If no such player already exists, store the code and name
+                            // This isn't fool proof. A player may join with this name between this POST request and the WS connection.
+                            // This site should handle it gracefully.
+                            props.store.code = code;
+                            props.store.name = name;
+                            props.store.socket = createSocket(name, code,
+                                function (event) {
+                                    comp.setState({showLobby: true}); // render the lobby within this component
+                                },
+                                function (event) {
+                                    // Show the error and go back to the join screen
+                                    comp.setState({showLobby: false, name: ""});
+                                    alert("Error: " + event.reason);
+                                }
+                            );
+                        } else {
+                            alert("That name is already taken! Please choose another!");
+                        }
+                    });
                 } else {
                     alert("Invalid room code!"); // Tell the player that the lobby doesn't exist
                 }
@@ -93,3 +112,5 @@ export default class JoinForm extends React.Component {
         );
     }
 }
+
+export default JoinForm;

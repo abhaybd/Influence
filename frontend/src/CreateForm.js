@@ -2,8 +2,9 @@ import React from "react";
 import { ReactComponent as BackIcon } from './back.svg';
 import { createSocket, doPost } from "./App";
 import Lobby from "./Lobby";
+
 //create Game
-export default class CreateForm extends React.Component {
+class CreateForm extends React.Component {
     constructor(props) {
         super(props);
 
@@ -27,11 +28,19 @@ export default class CreateForm extends React.Component {
             let comp = this;
 
             // Use an action request to create a new lobby
-            doPost("create", null, function (data) {
+            doPost({type: "create"}, function (data) {
                 console.log(data);
                 props.store.code = data.content;
-                props.store.socket = createSocket(props.store.name, props.store.code);
-                comp.setState({ showLobby: true }); // render the lobby within this component
+                props.store.socket = createSocket(props.store.name, props.store.code,
+                    function (event) {
+                        comp.setState({showLobby: true}); // render the lobby within this component
+                    },
+                    function (event) {
+                        // Show the error and go back to the create screen
+                        alert("Error: " + event.reason);
+                        comp.setState({showLobby: false});
+                    }
+                );
             });
         }
     }
@@ -72,3 +81,5 @@ export default class CreateForm extends React.Component {
         );
     }
 }
+
+export default CreateForm;

@@ -41,8 +41,8 @@ export default class Lobby extends React.Component {
         );
 
         let component = (
-            <div>
-                <p>An error occurred! Please create a new lobby or join an existing one!</p>
+            <div id="centered">
+                <p>You should never see this screen! If you do, please file an issue <a href="https://github.com/abhaybd/Influence/issues">here!</a></p>
                 <button type="button" className="form-button" onClick={this.props.main}>Go Back</button>
             </div>
         );
@@ -52,21 +52,26 @@ export default class Lobby extends React.Component {
                 <div id="centered">
                     <table>
                         <tbody>
-                            {this.state.players.map((player, i) => (<Row player={player} key={i} />))}
-                            <tr>
-                                <td colSpan="2">
-                                    <button type="button" className="form-button" onClick={this.props.start}>Start
+                        {this.state.players.map((player, i) => (<Row player={player} key={i}/>))}
+                        <tr>
+                            <td colSpan="2">
+                                <button type="button" className="form-button" onClick={this.props.start}>
+                                    Start
                                 </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    Code: <span id="lobby-code">{this.props.code}</span>
-                                </td>
-                                <td>
-                                    <CopyToClipboard text={this.props.code}><button id="copy-button"><CopyIcon /></button></CopyToClipboard>
-                                </td>
-                            </tr>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Code: <span id="lobby-code">{this.props.code}</span>
+                            </td>
+                            <td>
+                                <CopyToClipboard text={this.props.code}>
+                                    <button id="copy-button">
+                                        <CopyIcon/>
+                                    </button>
+                                </CopyToClipboard>
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>

@@ -1,22 +1,20 @@
 //Main Screen - Overall Layout
 import React from "react";
-import { Switch, Route, withRouter } from "react-router-dom";
+import {Switch, Route, withRouter, Link} from "react-router-dom";
 import "./App.css";
 import JoinForm from "./JoinForm";
 import CreateForm from "./CreateForm";
-import Lobby from "./Lobby";
 import Game from "./Game";
 import Rules from "./Rules";
 import queryString from "query-string";
 
 /**
  * Perform a POST request to the lobby API endpoint. This can either be an info or action request.
- * 
- * @param type The type of request.
- * @param code The lobby code, if applicable. May be null if no lobby code is required.
+ *
+ * @param content An object representing the content of the POST request
  * @param callback A callback to call once the request succeeds.
  */
-function doPost(type, code, callback) {
+function doPost(content, callback) {
     // Do a POST request
     const http = new XMLHttpRequest();
     http.open("POST", "/lobby");
@@ -34,11 +32,11 @@ function doPost(type, code, callback) {
     }
 
     // Serialize the content and send
-    let body = JSON.stringify({ type: type, code: code });
+    let body = JSON.stringify(content);
     http.send(body);
 }
 
-function createSocket(name, code, onclose = null) {
+function createSocket(name, code, onopen = null, onclose = null) {
     // This assembles the websocket uri
     // Essentially, change the protocol from http to ws, and direct the websocket to port 8080
     let loc = window.location;
@@ -51,7 +49,7 @@ function createSocket(name, code, onclose = null) {
     newUri = newUri.replace("3000", "8080");
     console.log(newUri);
     let socket = new WebSocket(newUri); // Open the websocket connection
-    socket.onopen = function (event) {
+    socket.onopen = onopen ?? function (event) {
         console.log("Opened!");
     };
     socket.onclose = onclose ?? function (event) {
@@ -122,12 +120,12 @@ class App extends React.Component {
     start() {
         let code = this.store.code;
         // Use an info request to determine the amount players. If there's enough, start the game
-        doPost("numPlayers", code, function (data) {
+        doPost({type: "numPlayers", code: code}, function (data) {
             if (data.content >= 2) {
                 console.log("Starting!");
                 // Use an action request to start the game
                 // Once the game starts, it'll send an event via websocket to trigger a state change, so we don't do that here
-                doPost("start", code, () => true);
+                doPost({type: "start", code: code}, () => true);
             }
         });
     }
@@ -146,7 +144,14 @@ class App extends React.Component {
     }
 
     render() {
-        const Header = () => <div id="header"><h1>INFLUENCE</h1><br />A Game of Deception</div>
+        const Header = () => (
+            <div id="header">
+                <Link to="/" style={{textDecoration: "none"}}>
+                    <h1>INFLUENCE</h1>
+                    <br/>A Game of Deception
+                </Link>
+            </div>
+        );
 
         const showRules = this.props.location.state?.showRules || false;
 

@@ -43,6 +43,13 @@ Info requests retrieve information about lobbies.
   - Gets the number of players in the lobby with the specified code
   - If the lobby exists, will respond with HTTP 200, and the body will be in the form `{"content":numPlayers}`, where `numPlayers` is the number of players
   - If the lobby doesn't exist, will respond with HTTP 422
+- `playerInLobby`
+  - Of the form `{"type":"playerInLobby", "code":"EXAMPLE-CODE", "content":"PLAYER-NAME"}`
+  - Checks if a player with the specified name is in the specified lobby. This is useful to gracefully check for taken names without initiating a websocket connection.
+  - As you can see, requires an additional `content` key, in which the player name to check for is specified.
+  - Returns HTTP 200 if all 3 required keys are defined.
+  - If the specified lobby exists and a player with the specified name exists, returns `{"content":true}`. Otherwise, returns `{"content":false}`.
+  - If the required keys are not all defined, responds with HTTP 400.
 
 ## Player WebSocket
 
