@@ -79,6 +79,7 @@ body {
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    font-family: "Alata", Arial, sans-serif;
 }
 
 .card-container {
@@ -93,25 +94,64 @@ body {
     border-radius: 10px;
 }
 
-.player-icon {
-    background-color: #000;
-    margin: 1.1em 1.1em 1.1em 1.1em;
-    text-align: center;
-    border-radius: 10px;
-}
-
 .card-names {
     margin: 1em 1em 1em 1em;
     text-align: center;
     font-size: 0.8em;
 }
 
-.local-player-icon {
-    background-color: #000;
-    margin: 1.1em 1.1em 1.1em 1.1em;
+.choice-icon {
+    height:1em;
+    width:6em;
+    line-height:1em;
+    font-size:0.8em;
+    margin: 0.5em 0.5em 0.5em 0.5em;
+    padding: 0.5em 0.5em 0.5em 0.5em;
     text-align: center;
-    border: double white;
     border-radius: 10px;
+    background-color:#596273;
+    color: white;
+}
+
+.player-icon {
+    height:4em;
+    width:6.3em;
+    font-size:0.8em;
+    margin: 0.5em 0.5em 0.5em 0.5em;
+    padding: 0.5em 0.5em 0.8em 0.5em;
+    text-align: center;
+    border-radius: 10px;
+}
+
+
+
+.local-player-icon {
+    /* background-color: #000; */
+    height:4em;
+    width:6.3em;
+    font-size:0.8em;
+    margin: 0.5em 0.5em 0.5em 0.5em;
+    padding: 0.5em 0.5em 0.8em 0.5em;
+    text-align: center;
+    /* border: double white; */
+    border-left: 6px solid red;
+    border-radius: 10px;
+}
+
+#playerText{
+    color:#434956;
+    font-size:1.3em;
+    font-family: "Alata", Arial, sans-serif;
+}
+
+#coinText{
+    font-size: 0.8em;
+    font-family: "Alata", Arial, sans-serif;
+}
+
+#influenceText{
+    font-size:0.8em;
+    font-family: "Alata", Arial, sans-serif;
 }
 
 input[type="text"] {
@@ -155,7 +195,7 @@ input[type="submit"]:hover {
 #rules-box {
     margin: 10px;
     position: absolute;
-    background: #eeeeee;
+    background: #fff;
     top: 5%;
     padding: 30px 20px 5px 20px;
     min-height: 10vh;
@@ -201,7 +241,8 @@ input[type="submit"]:hover {
     position: fixed;
     text-align: left;
     left: 1ch;
-    font-size: 0.6em;
+    font-size: 0.5em;
+    font-family: "Alata", Arial, sans-serif;
 }
 
 #back {
@@ -218,9 +259,10 @@ input[type="submit"]:hover {
 
 #footer {
     text-align: center;
-    font-size: 1em;
+    font-size: 0.8em;
+    font-family: "Alata", Arial, sans-serif;
     position: fixed;
-    bottom: 30px;
+    bottom: 25px;
     color: white;
     left: 0;
     right: 0;
@@ -246,9 +288,10 @@ input[type="submit"]:hover {
 }
 
 #copy-button {
-    height: 40px;
-    width: 40px;
+    height: 30px;
+    width: 30px;
     padding: 5px -2px 5px -2px;
+    border-radius:10px;
 }
 
 #create-name {

@@ -1,11 +1,11 @@
 import React from "react";
-import {ReactComponent as CopyIcon} from "./copy.svg";
-import {CopyToClipboard} from "react-copy-to-clipboard/lib/Component";
+import { ReactComponent as CopyIcon } from "./copy.svg";
+import { CopyToClipboard } from "react-copy-to-clipboard/lib/Component";
 
 export default class Lobby extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {players: []}
+        this.state = { players: [] }
 
         if (props.socket) {
             this.socket = props.socket;
@@ -28,13 +28,13 @@ export default class Lobby extends React.Component {
             this.props.onStart(); // Render the game view
         } else {
             // This is a lobby update, so update the list of players in the lobby
-            this.setState({players: data});
+            this.setState({ players: data });
         }
     }
 
     render() {
         // Map a player to a row in a table to display
-        const Row = ({player}) => (
+        const Row = ({ player }) => (
             <tr>
                 <td colSpan="2">{player}</td>
             </tr>
@@ -52,21 +52,21 @@ export default class Lobby extends React.Component {
                 <div id="centered">
                     <table>
                         <tbody>
-                        {this.state.players.map((player, i) => (<Row player={player} key={i}/>))}
-                        <tr>
-                            <td colSpan="2">
-                                <button type="button" className="form-button" onClick={this.props.start}>Start
+                            {this.state.players.map((player, i) => (<Row player={player} key={i} />))}
+                            <tr>
+                                <td colSpan="2">
+                                    <button type="button" className="form-button" onClick={this.props.start}>Start
                                 </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                Code: <span id="lobby-code">{this.props.code}</span>
-                            </td>
-                            <td>
-                                <CopyToClipboard text={this.props.code}><button id="copy-button"><CopyIcon/></button></CopyToClipboard>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Code: <span id="lobby-code">{this.props.code}</span>
+                                </td>
+                                <td>
+                                    <CopyToClipboard text={this.props.code}><button id="copy-button"><CopyIcon /></button></CopyToClipboard>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

@@ -1,6 +1,6 @@
 //Main Screen - Overall Layout
 import React from "react";
-import {Switch, Route, withRouter} from "react-router-dom";
+import { Switch, Route, withRouter } from "react-router-dom";
 import "./App.css";
 import JoinForm from "./JoinForm";
 import CreateForm from "./CreateForm";
@@ -11,7 +11,7 @@ import queryString from "query-string";
 
 /**
  * Perform a POST request to the lobby API endpoint. This can either be an info or action request.
- *
+ * 
  * @param type The type of request.
  * @param code The lobby code, if applicable. May be null if no lobby code is required.
  * @param callback A callback to call once the request succeeds.
@@ -34,7 +34,7 @@ function doPost(type, code, callback) {
     }
 
     // Serialize the content and send
-    let body = JSON.stringify({type: type, code: code});
+    let body = JSON.stringify({ type: type, code: code });
     http.send(body);
 }
 
@@ -67,16 +67,16 @@ function MainScreen(props) {
     return (
         <table className="buttons">
             <tbody>
-            <tr>
-                <td>
-                    <button type="button" className="form-button" onClick={props.createForm}>Create Game</button>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <button type="button" className="form-button" onClick={props.joinForm}>Join Game</button>
-                </td>
-            </tr>
+                <tr>
+                    <td>
+                        <button type="button" className="form-button" onClick={props.createForm}>Create Game</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <button type="button" className="form-button" onClick={props.joinForm}>Join Game</button>
+                    </td>
+                </tr>
             </tbody>
         </table>
     );
@@ -101,7 +101,7 @@ class App extends React.Component {
 
     pushState(pathname, state = {}, search = {}) {
         let searchString = "?" + queryString.stringify(search);
-        this.props.history.push({pathname: pathname, state: state, search: searchString});
+        this.props.history.push({ pathname: pathname, state: state, search: searchString });
     }
 
     createForm() {
@@ -135,18 +135,18 @@ class App extends React.Component {
     onStart() {
         // We're starting the game, so add the name and code to the url as parameters
         // This will allow the player to reconnect if they disconnect later
-        let info = {name: this.store.name, code: this.store.code};
+        let info = { name: this.store.name, code: this.store.code };
         this.pushState("/game", {}, info);
     }
 
     toggleRules() {
         // Don't change the location, just toggle the rules state
         const currShowRules = this.props.location.state?.showRules || false;
-        this.pushState(this.props.location.pathname, {showRules: !currShowRules});
+        this.pushState(this.props.location.pathname, { showRules: !currShowRules });
     }
 
     render() {
-        const Header = () => <div id="header"><h1>INFLUENCE</h1><br/>A Game of Deception</div>
+        const Header = () => <div id="header"><h1>INFLUENCE</h1><br />A Game of Deception</div>
 
         const showRules = this.props.location.state?.showRules || false;
 
@@ -154,36 +154,38 @@ class App extends React.Component {
         return (
             <div className="App">
                 <header className="App-header">
-                    {showRules ? <Rules back={this.toggleRules}/> : null}
+                    {showRules ? <Rules back={this.toggleRules} /> : null}
                     <div id="rules-button" onClick={this.toggleRules}>
                         <u>{showRules ? "Hide" : "Show"} Rules</u></div>
                     <Switch>
-                        <Route exact path="/" component={Header}/>
-                        <Route path="/create" component={Header}/>
-                        <Route path="/join" component={Header}/>
+                        <Route exact path="/" component={Header} />
+                        <Route path="/create" component={Header} />
+                        <Route path="/join" component={Header} />
                     </Switch>
                     <Switch>
                         <Route exact path="/">
-                            <MainScreen createForm={this.createForm} joinForm={this.joinForm}/>
+                            <MainScreen createForm={this.createForm} joinForm={this.joinForm} />
                         </Route>
                         <Route path="/create">
                             <CreateForm store={this.store} main={this.mainScreen} start={this.start}
-                                        onStart={this.onStart}/>
+                                onStart={this.onStart} />
                         </Route>
                         <Route path="/join">
                             <JoinForm store={this.store} main={this.mainScreen} start={this.start}
-                                      onStart={this.onStart}/>
+                                onStart={this.onStart} />
                         </Route>
                         <Route path="/game">
-                            <Game players={[]} socket={this.store.socket} localPlayer={this.store.name}/>
+                            <Game players={[]} socket={this.store.socket} localPlayer={this.store.name} />
                         </Route>
                     </Switch>
                 </header>
-                <div id="footer">Made by <a href="https://www.github.com/abhaybd">Abhay Deshpande</a></div>
+                <div id="footer">Made by <a href="https://www.github.com/abhaybd">Abhay Deshpande </a> <br />
+                UI design by <a href="https://www.github.com/iwangy"> Ian Wang</a></div>
+
             </div>
         );
     }
 }
 
 export default withRouter(App);
-export {doPost, createSocket};
+export { doPost, createSocket };

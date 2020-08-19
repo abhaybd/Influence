@@ -1,7 +1,7 @@
 import React from "react";
-import {createSocket} from "./App";
+import { createSocket } from "./App";
 import queryString from "query-string";
-import {withRouter} from "react-router";
+import { withRouter } from "react-router";
 
 //game
 class Game extends React.Component {
@@ -12,7 +12,7 @@ class Game extends React.Component {
         this.onDisconnect = this.onDisconnect.bind(this);
         this.getLocalPlayer = this.getLocalPlayer.bind(this);
 
-        this.state = {players: props.players ?? [], choices: [], message: "", log: ["Started game!"]}
+        this.state = { players: props.players ?? [], choices: [], message: "", log: ["Started game!"], playerColor: null }
 
         window.onbeforeunload = () => true; // block refreshes
     }
@@ -90,7 +90,7 @@ class Game extends React.Component {
 
     //Assigns Colors to each player for their player card
     assignColors(players) {
-        const colorList = ["#FFF275", "#FF8C42", "#FF3C38", "#A23E48", "#6C8EAD", "#E8D7FF"];
+        const colorList = ["#19D2E8", "#44DFB6", "#77EA83", "#E6D517", "#E8AA14", "#FF5714"];
         let map = {};
         for (let i = 0; i < players.length; i++) {
             map[players[i].name] = colorList[i];
@@ -124,16 +124,16 @@ class Game extends React.Component {
         // Map a player to a JSX element for displaying
         const Player = ({ player, influence, coins, color }) => (
             <div className={player === this.localPlayerName ? "local-player-icon" : "player-icon"} style={{ backgroundColor: color }}>
-                {player} <br />
-                Coins: {coins} <br />
-                Influences: {influence}
+                <b id="playerText">{player}</b><br />
+                <span id="coinText">Coins: {coins}</span> <br />
+                <span id="influenceText">Influences: {influence}</span>
             </div>
         );
 
         // Map a choice to a JSX element for displaying
         const Choice = ({ choice }) => (
             <button className="game-button" onClick={() => this.onChoice(choice)}>
-                <div className="player-icon">
+                <div className="choice-icon">
                     {choice}
                 </div>
             </button>
@@ -155,7 +155,7 @@ class Game extends React.Component {
                         <div className="card-names">{card}</div>)}
                 </div>
                 <div className="game-container">
-                    {this.state.message}
+                    <strong>{this.state.message}</strong>
                 </div>
                 <div className="game-container">
                     {this.state.choices.map((choice, i) => <Choice key={i} choice={choice} />)}
