@@ -1,6 +1,6 @@
 //Main Screen - Overall Layout
 import React from "react";
-import {Switch, Route, withRouter} from "react-router-dom";
+import {Switch, Route, withRouter, Link} from "react-router-dom";
 import "./App.css";
 import JoinForm from "./JoinForm";
 import CreateForm from "./CreateForm";
@@ -144,7 +144,14 @@ class App extends React.Component {
     }
 
     render() {
-        const Header = () => <div id="header"><h1>INFLUENCE</h1><br/>A Game of Deception</div>
+        const Header = () => (
+            <div id="header">
+                <Link to="/" style={{textDecoration: "none"}}>
+                    <h1>INFLUENCE</h1>
+                    <br/>A Game of Deception
+                </Link>
+            </div>
+        );
 
         const showRules = this.props.location.state?.showRules || false;
 
