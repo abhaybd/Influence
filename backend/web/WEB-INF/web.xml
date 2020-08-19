@@ -7,9 +7,19 @@
         <servlet-name>Lobby</servlet-name>
         <servlet-class>com.coolioasjulio.influence.web.LobbyServlet</servlet-class>
     </servlet>
+
+    <servlet>
+        <servlet-name>index</servlet-name>
+        <jsp-file>/index.html</jsp-file>
+    </servlet>
     
     <servlet-mapping>
         <servlet-name>Lobby</servlet-name>
         <url-pattern>/lobby</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>index</servlet-name>
+        <url-pattern>/*</url-pattern>
     </servlet-mapping>
 </web-app>
