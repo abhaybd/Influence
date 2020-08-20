@@ -20,11 +20,14 @@ class Game extends React.Component {
     componentDidMount() {
         console.log("Game mounted!");
         if (this.props.socket) {
+            console.log("Using an existing socket!");
             this.socket = this.props.socket;
             this.localPlayerName = this.props.localPlayer;
+            this.socket.onclose = this.onDisconnect;
         } else {
+            console.log("Making new socket and trying to join existing game...");
             let args = queryString.parse(this.props.location.search);
-            this.socket = createSocket(args.name, args.code, this.onDisconnect);
+            this.socket = createSocket(args.name, args.code, null, this.onDisconnect);
             this.localPlayerName = args.name;
         }
 
@@ -33,8 +36,13 @@ class Game extends React.Component {
     }
 
     onDisconnect(event) {
-        alert("Unexpected disconnection from server! Error: " + event.reason);
-        this.props.history.push("/");
+        // The server will always define a close reason, so if none is defined, then this close was not initiated by the server
+        // In that case, we want to stay on this page so the client can reconnect
+        if (event.reason) {
+            // If the close was initiated by the server, alert the user and go to the homepage
+            alert("Unexpected disconnection from server! Error: " + event.reason);
+            this.props.history.push("/");
+        }
     }
 
     onMessage(event) {
@@ -154,7 +162,7 @@ class Game extends React.Component {
         return (
             <div id="game-div">
                 <div id="event-log">
-                    {log.map(line => <div>{line}<br/></div>)}
+                    {log.map((line,i) => <div key={i}>{line}<br/></div>)}
                 </div>
                 <div className="game-container">
                     {this.state.players.map(player => <Player key={player.name} player={player.name}
@@ -163,8 +171,8 @@ class Game extends React.Component {
                                                               color={this.state.playerColorMap[player.name]}/>)}
                 </div>
                 <div className="game-container">
-                    {this.getLocalPlayer().cards.map(card => card === null ? null :
-                        <div className="card-names">{card}</div>)}
+                    {this.getLocalPlayer().cards.map((card, i) => card === null ? null :
+                        <div className="card-names" key={i}>{card}</div>)}
                 </div>
                 <div className="game-container">
                     <strong>{this.state.message}</strong>
