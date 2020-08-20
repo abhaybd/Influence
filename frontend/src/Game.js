@@ -139,11 +139,22 @@ class Game extends React.Component {
             </button>
         );
 
+        // Copy the contents of the event log into a temp variable
+        let log = [];
+        for (let event of this.state.log) {
+            log.push(event);
+        }
+
+        // Pad to 5 entries, so even if the log isn't full it takes up the same amount of space
+        while (log.length < 5) {
+            log.push("");
+        }
+
         // Render the component contents
         return (
-            <div>
+            <div id="game-div">
                 <div id="event-log">
-                    {this.state.log.map(line => <div>{line}<br/></div>)}
+                    {log.map(line => <div>{line}<br/></div>)}
                 </div>
                 <div className="game-container">
                     {this.state.players.map(player => <Player key={player.name} player={player.name}

@@ -245,11 +245,14 @@ input[type="submit"]:hover {
 }
 
 #event-log {
-  position: fixed;
   text-align: left;
-  left: 1ch;
+  margin-left: 1ch;
   font-size: 0.5em;
   font-family: "Alata", Arial, sans-serif;
+}
+
+#game-div{
+  width: 100%;
 }
 
 #back {
