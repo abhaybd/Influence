@@ -13,12 +13,12 @@ class Game extends React.Component {
         this.getLocalPlayer = this.getLocalPlayer.bind(this);
 
         this.state = {players: props.players ?? [], choices: [], message: "", log: ["Started game!"], playerColorMap: null}
-
-        window.onbeforeunload = () => true; // block refreshes
     }
+
 
     componentDidMount() {
         console.log("Game mounted!");
+        window.onbeforeunload = () => true; // block refreshes
         if (this.props.socket) {
             console.log("Using an existing socket!");
             this.socket = this.props.socket;
@@ -33,6 +33,10 @@ class Game extends React.Component {
 
         // Register the onmessage event handler for the websocket
         this.socket.onmessage = this.onMessage;
+    }
+
+    componentWillUnmount() {
+        window.onbeforeunload = null;
     }
 
     onDisconnect(event) {

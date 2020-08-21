@@ -14,8 +14,15 @@ export default class Lobby extends React.Component {
             this.onmessage = this.onmessage.bind(this);
 
             this.socket.onmessage = this.onmessage;
-            window.onbeforeunload = () => true; // block refreshes
         }
+    }
+
+    componentDidMount() {
+        window.onbeforeunload = () => true; // block refreshes
+    }
+
+    componentWillUnmount() {
+        window.onbeforeunload = null;
     }
 
     onmessage(event) {
