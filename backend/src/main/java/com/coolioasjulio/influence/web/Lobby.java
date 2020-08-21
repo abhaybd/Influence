@@ -6,15 +6,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Lobby {
     public static final int CODE_LEN = 3; // code is made up of these many nouns
-    private static final Map<String, Lobby> lobbyMap = new ConcurrentHashMap<>();
+    private static final Object lobbyLock = new Object();
+    private static final Map<String, Lobby> lobbyMap = new HashMap<>();
     private static String[] nouns; // the nouns from which to assemble lobby codes. Will be lazy-loaded from disk.
     private static final Object nounsLock = new Object();
 
@@ -41,27 +42,41 @@ public class Lobby {
                     }
                 }
             }
-
         }
 
-        // The code is made up of multiple words from the word list
-        String[] parts = new String[CODE_LEN];
-        String code;
-        // Keep assembling random codes until we've generated one that doesn't belong to an active lobby
+        Lobby lobby = null;
+        // Keep repeating the creation process until it successfully generates a lobby
         do {
-            // Select random words from the word list
-            for (int i = 0; i < parts.length; i++) {
-                parts[i] = nouns[ThreadLocalRandom.current().nextInt(nouns.length)];
+            // The code is made up of multiple words from the word list
+            String[] parts = new String[CODE_LEN];
+            String code;
+            // Keep assembling random codes until we've generated one that doesn't belong to an active lobby
+            do {
+                // Select random words from the word list
+                for (int i = 0; i < parts.length; i++) {
+                    parts[i] = nouns[ThreadLocalRandom.current().nextInt(nouns.length)];
+                }
+                code = String.join("-", parts);
+            } while (lobbyExists(code));
+
+            // synchronize on the map before creating
+            // Two threads may have simultaneously generated the same lobby code
+            synchronized (lobbyMap) {
+                if (!lobbyExists(code)) {
+                    // If this code is still free, generate a new lobby
+                    lobby = new Lobby(code);
+                    lobbyMap.put(code, lobby);
+                }
             }
-            code = String.join("-", parts);
-        } while (lobbyMap.containsKey(code));
-        // Create a new lobby with this code
-        Lobby lobby = new Lobby(code);
-        // Technically, this could cause issues due to multithreading.
-        // If two threads simultaneously create the same code at the same time, one lobby will be invisible to any joining player.
-        // The chances of this are literally less than one in a million, so whatever
-        lobbyMap.put(code, lobby);
+        } while (lobby == null);
+
         return lobby;
+    }
+
+    public static boolean lobbyExists(String code) {
+        synchronized (lobbyLock) {
+            return lobbyMap.containsKey(code);
+        }
     }
 
     private final String code;
