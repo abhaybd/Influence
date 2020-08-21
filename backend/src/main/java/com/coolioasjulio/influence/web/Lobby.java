@@ -250,7 +250,7 @@ public class Lobby {
         // Close all websockets. This will no-op for already closed sockets.
         for (PlayerEndpoint player : players) {
             try {
-                player.close();
+                player.close("The game has been terminated!");
             } catch (IOException e) {
                 e.printStackTrace();
             }

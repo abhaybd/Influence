@@ -63,8 +63,8 @@ public class PlayerEndpoint {
         System.err.printf("Error with %s in lobby %s: %s\n", name, lobby.getCode(), throwable.getMessage());
     }
 
-    public synchronized void close() throws IOException {
-        session.close();
+    public synchronized void close(String reason) throws IOException {
+        session.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, reason));
     }
 
     public boolean isConnected() {
