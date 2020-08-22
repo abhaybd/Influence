@@ -9,18 +9,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Lobby {
     public static final int CODE_LEN = 3; // code is made up of these many nouns
-    private static final Object lobbyLock = new Object();
+    private static final int LOBBY_TIMEOUT_MINS = 30; // lobby automatically cleans up after these many minutes
+    private static final Object lobbyMapLock = new Object();
     private static final Map<String, Lobby> lobbyMap = new HashMap<>();
     private static String[] nouns; // the nouns from which to assemble lobby codes. Will be lazy-loaded from disk.
     private static final Object nounsLock = new Object();
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
 
     public static Lobby getLobby(String code) {
-        return lobbyMap.get(code);
+        synchronized (lobbyMapLock) {
+            return lobbyMap.get(code);
+        }
     }
 
     public static Lobby create() {
@@ -61,7 +67,7 @@ public class Lobby {
 
             // synchronize on the map before creating
             // Two threads may have simultaneously generated the same lobby code
-            synchronized (lobbyMap) {
+            synchronized (lobbyMapLock) {
                 if (!lobbyExists(code)) {
                     // If this code is still free, generate a new lobby
                     lobby = new Lobby(code);
@@ -70,11 +76,23 @@ public class Lobby {
             }
         } while (lobby == null);
 
+        final Lobby l = lobby;
+        // submit a task to wait for some time and then cleanup the lobby
+        executor.submit(() -> {
+            try {
+                Thread.sleep(LOBBY_TIMEOUT_MINS * 1000 * 60); // convert minutes to millis
+                // If the lobby has already started or closed by now, this will no-op
+                l.timedOut();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+
         return lobby;
     }
 
     public static boolean lobbyExists(String code) {
-        synchronized (lobbyLock) {
+        synchronized (lobbyMapLock) {
             return lobbyMap.containsKey(code);
         }
     }
@@ -131,6 +149,37 @@ public class Lobby {
      */
     public boolean isStarted() {
         return started.get();
+    }
+
+    /**
+     * Called when this lobby has timed out. (been sitting for too long without starting or terminating)
+     */
+    private void timedOut() {
+        boolean inMap;
+        synchronized (lobbyMapLock) {
+            inMap = lobbyMap.get(code) == this;
+        }
+
+        // Only do anything if the game has not already started and it's still available in the lobby map
+        if (!isStarted() && inMap) {
+            // Disconnect all players
+            for (PlayerEndpoint endpoint : players) {
+                try {
+                    // No need to call removePlayer(), the endpoint will call it when it disconnects
+                    endpoint.close("The lobby has been inactive for too long!");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            // Re-synchronize on the map to remove this lobby from the map
+            synchronized (lobbyMapLock) {
+                // Ensure that this lobby is still associated to this code
+                if (lobbyMap.get(code) == this) {
+                    lobbyMap.remove(code);
+                }
+            }
+        }
     }
 
     /**
@@ -201,8 +250,10 @@ public class Lobby {
             // If all players have disconnected, end the lobby
             if (players.stream().noneMatch(PlayerEndpoint::isConnected)) {
                 System.out.printf("Lobby %s terminated.\n", code);
-                // Remove from the global lobby map
-                lobbyMap.remove(code);
+                synchronized (lobbyMapLock) {
+                    // Remove from the global lobby map
+                    lobbyMap.remove(code);
+                }
                 shouldClose = true;
                 // Terminate the game thread, if it exists
                 if (gameThread != null) {
@@ -270,7 +321,9 @@ public class Lobby {
                 e.printStackTrace();
             }
         }
-        lobbyMap.remove(code); // Remove the lobby from the map
+        synchronized (lobbyMapLock) {
+            lobbyMap.remove(code); // Remove the lobby from the map
+        }
         System.out.printf("Thread for lobby %s terminated!\n", code);
     }
 }
