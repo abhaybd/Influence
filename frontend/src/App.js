@@ -37,16 +37,9 @@ function doPost(content, callback) {
 }
 
 function createSocket(name, code, onopen = null, onclose = null) {
-    // This assembles the websocket uri
-    // Essentially, change the protocol from http to ws, and direct the websocket to port 8080
     let loc = window.location;
-    let newUri = loc.protocol === "https:" ? "wss:" : "ws:";
-    // React proxy doesn't redirect websockets, so we'll have to manually replace the port 3000 with 8080
-    newUri += "//" + loc.host.replace("3000", "8080");
-    // On prod servers, the port isn't in the url but on dev servers it is. So make sure to not duplicate the port
-    if (!newUri.endsWith(":8080")) newUri += ":8080";
-    newUri += "/ws/join/" + code + "/" + name;
-    newUri = newUri.replace("3000", "8080");
+    let protocol = loc.protocol === "https:" ? "wss:" : "ws:"; // use SSL if we're currently using SSL, otherwise don't
+    let newUri = `${protocol}//${loc.hostname}:8080/ws/join/${code}/${name}`; // build the websocket uri
     console.log(newUri);
     let socket = new WebSocket(newUri); // Open the websocket connection
     socket.onopen = onopen ?? function (event) {
