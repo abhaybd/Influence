@@ -27,21 +27,27 @@ public class WebGame extends Game {
      * player name => list of json messages
      */
     private final Map<String, List<String>> cachedJson;
+    /**
+     * Maps a player object to an object that will be notified when this player reconnects to this game.
+     * This map is unmodifiable, so this object will never change, making it safe for synchronization.
+     */
+    private final Map<String, Object> playerReconnectionNotifier;
     private final ExecutorService executorService;
     private final Gson gson;
-    private final Lobby lobby;
 
-    public WebGame(Lobby lobby, PlayerEndpoint[] endpoints) {
+    public WebGame(PlayerEndpoint[] endpoints) {
         // Map the endpoints to their names and populate the player array
         super(Arrays.stream(endpoints).map(PlayerEndpoint::getName).toArray(String[]::new));
-        this.lobby = lobby;
         // Create and populate a map from player objects to endpoints, so we can access the communication
         endpointMap = Collections.synchronizedMap(new HashMap<>());
+        HashMap<String, Object> map = new HashMap<>();
         for (int i = 0; i < players.length; i++) {
             endpointMap.put(players[i], endpoints[i]);
+            map.put(players[i].getName(), new Object());
         }
 
         gson = new Gson();
+        playerReconnectionNotifier = Collections.unmodifiableMap(map);
         cachedJson = Collections.synchronizedMap(new HashMap<>());
         executorService = Executors.newFixedThreadPool(8);
     }
@@ -75,6 +81,10 @@ public class WebGame extends Game {
                     }
                     // Inform all players that this player reconnected
                     log("%s has reconnected to the game!", player.getName());
+                    final Object lock = playerReconnectionNotifier.get(name);
+                    synchronized (lock) {
+                        lock.notifyAll();
+                    }
                     return;
                 }
             }
@@ -155,8 +165,7 @@ public class WebGame extends Game {
                     }
                 }
             }
-            // Yield to avoid busy waiting (not very clean but it works)
-            Thread.yield();
+            Thread.sleep(100);
         }
         // All futures have completed and returned null
         return null;
@@ -196,29 +205,36 @@ public class WebGame extends Game {
 
         String responseJson = null;
         do {
-            Thread.yield(); // avoid busy waiting
             try {
-                if (Thread.interrupted()) {
-                    throw new InterruptedException();
-                }
                 // Read a line from the player
                 PlayerEndpoint endpoint = endpointMap.get(player);
                 responseJson = endpoint.readLine();
+                if (responseJson == null) {
+                    throw new IOException(); // the player is disconnected
+                }
             } catch (IOException e) {
-                // The player disconnected, so ignore this exception, and loop back and wait for a new connection
+                // The player isn't connected right now, so wait for reconnection
+                final Object notifier = playerReconnectionNotifier.get(player.getName());
+                // This object will be notified when the player reconnects
+                synchronized (notifier) {
+                    while (!endpointMap.get(player).isConnected()) {
+                        notifier.wait();
+                    }
+                }
             }
         } while (responseJson == null);
 
         System.out.printf("Got response %s from player %s\n", responseJson, player.getName());
-        // Remove the cached json message
-        cachedJson.get(player.getName()).remove(json);
+        // Clear the cached json
+        cachedJson.get(player.getName()).clear();
         String response = gson.fromJson(responseJson, String.class); // The response will be a String
         // Find the choice that corresponds to the response
         for (int i = 0; i < choices.length; i++) {
             if (choicesStr[i].equals(response)) return choices[i];
         }
         // If the response was invalid, return null
-        System.err.printf("Error: %s gave invalid response %s from options %s\n", player.getName(), responseJson, Arrays.toString(choicesStr));
+        System.err.printf("Error: %s gave invalid response %s from options %s\n",
+                player.getName(), responseJson, Arrays.toString(choicesStr));
         return null;
     }
 

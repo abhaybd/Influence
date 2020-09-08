@@ -310,7 +310,7 @@ public class Lobby {
                 players[index] = temp;
             }
             // Play a new game
-            game = new WebGame(this, players);
+            game = new WebGame(players);
             game.playGame();
         }
         // Close all websockets. This will no-op for already closed sockets.
