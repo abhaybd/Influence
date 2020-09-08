@@ -247,7 +247,9 @@ public class WebGame extends Game {
     @Override
     protected void playerWon(Player player) {
         // info type messages will be on a popup, as opposed to the log
-        broadcast("info", String.format("%s wins!", player.getName()));
+        String message = String.format("%s wins!", player.getName());
+        log(message);
+        broadcast("info", message);
     }
 
     @Override
@@ -259,7 +261,7 @@ public class WebGame extends Game {
     @Override
     protected void playerDied(Player player) {
         // Alert everyone that a player died
-        broadcast("info", String.format("%s died!", player.getName()));
+        log("%s died!", player.getName());
     }
 
     @Override

@@ -3,6 +3,8 @@ import {createSocket} from "./App";
 import queryString from "query-string";
 import {withRouter} from "react-router";
 
+const WAITING_MSG = "Waiting for others...";
+
 //game
 class Game extends React.Component {
     constructor(props) {
@@ -12,7 +14,7 @@ class Game extends React.Component {
         this.onDisconnect = this.onDisconnect.bind(this);
         this.getLocalPlayer = this.getLocalPlayer.bind(this);
 
-        this.state = {players: props.players ?? [], choices: [], message: "", log: ["Started game!"], playerColorMap: null}
+        this.state = {players: props.players ?? [], choices: [], message: WAITING_MSG, log: ["Started game!"], playerColorMap: null}
     }
 
 
@@ -79,7 +81,7 @@ class Game extends React.Component {
                 console.log("Stopping choice!");
                 // The time for making choices has ended, so stop making a choice
                 // If the player wasn't already making a choice, this doesn't break anything
-                this.setState({choices: [], message: "Waiting for others..."});
+                this.setState({choices: [], message: WAITING_MSG});
                 break;
 
             case "log":
@@ -128,7 +130,7 @@ class Game extends React.Component {
 
     onChoice(choice) {
         // The player has made a choice, so stop displaying the choices
-        this.setState({choices: [], message: "Waiting for others..."});
+        this.setState({choices: [], message: WAITING_MSG});
         this.socket.send(JSON.stringify(choice)); // Send the players choice to the server
     }
 
