@@ -59,7 +59,7 @@ public abstract class Game {
 
                 // Mark all players with 0 influence as dead
                 for (int i = 0; i < players.length; i++) {
-                    if (players[i].getInfluence() == 0) {
+                    if (players[i] != null && players[i].getInfluence() == 0) {
                         playerDied(players[i]);
                         players[i] = null;
                     }

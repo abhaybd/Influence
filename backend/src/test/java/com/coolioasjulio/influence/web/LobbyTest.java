@@ -3,6 +3,8 @@ package com.coolioasjulio.influence.web;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class LobbyTest {
@@ -12,10 +14,10 @@ class LobbyTest {
         try {
             // The readLine() method will just block indefinitely, then bubble up an exception
             Mockito.when(player.readLine()).then(e -> {
-                while (!Thread.interrupted()) ;
+                while (!Thread.interrupted()) Thread.sleep(100);
                 throw new InterruptedException();
             });
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | IOException e) {
             e.printStackTrace();
         }
         return player;

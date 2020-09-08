@@ -71,7 +71,7 @@ public class PlayerEndpoint {
         return connected;
     }
 
-    public String readLine() throws InterruptedException {
+    public String readLine() throws InterruptedException, IOException {
         // No-op if this endpoint is disconnected
         if (!connected) return null;
         // We'll cache the threads that are waiting on the queue
@@ -81,6 +81,14 @@ public class PlayerEndpoint {
             // Cache the thread and wait for data from the queue to become available
             readingThreads.add(thread);
             return messageQueue.take();
+        } catch (InterruptedException e) {
+            // If the player is still connected, this interruption was external, so rethrow it
+            if (connected) {
+                throw e;
+            } else {
+                // If the player is disconnected, this exception was because they just disconnected
+                throw new IOException("Client " + name + " disconnected!");
+            }
         } finally {
             // The thread is no longer waiting, so remove this thread from the cache
             readingThreads.remove(thread);

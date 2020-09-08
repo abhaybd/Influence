@@ -7,6 +7,7 @@ import com.coolioasjulio.influence.Player;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -113,6 +114,14 @@ public class WebGame extends Game {
     }
 
     /**
+     * Signal to all players that the opportunity to make a choice has passed, even if no opportunity was available to begin with.
+     */
+    private void stopChoice() {
+        cachedJson.values().forEach(List::clear); // clear the cached choice messages, since the opportunity has passed
+        broadcast("stopChoice", null);
+    }
+
+    /**
      * Get the Future that finishes first AND satisfies the supplied predicate. If no such Future exists, return null.
      *
      * @param futures   The futures to monitor.
@@ -187,20 +196,20 @@ public class WebGame extends Game {
 
         String responseJson = null;
         do {
+            Thread.yield(); // avoid busy waiting
             try {
                 if (Thread.interrupted()) {
                     throw new InterruptedException();
                 }
+                // Read a line from the player
                 PlayerEndpoint endpoint = endpointMap.get(player);
                 responseJson = endpoint.readLine();
-            } catch (InterruptedException e) {
-                if (lobby.shouldClose()) {
-                    throw e;
-                }
+            } catch (IOException e) {
+                // The player disconnected, so ignore this exception, and loop back and wait for a new connection
             }
         } while (responseJson == null);
 
-        System.out.println("Got response: " + responseJson);
+        System.out.printf("Got response %s from player %s\n", responseJson, player.getName());
         // Remove the cached json message
         cachedJson.get(player.getName()).remove(json);
         String response = gson.fromJson(responseJson, String.class); // The response will be a String
@@ -209,6 +218,7 @@ public class WebGame extends Game {
             if (choicesStr[i].equals(response)) return choices[i];
         }
         // If the response was invalid, return null
+        System.err.printf("Error: %s gave invalid response %s from options %s\n", player.getName(), responseJson, Arrays.toString(choicesStr));
         return null;
     }
 
@@ -249,13 +259,18 @@ public class WebGame extends Game {
     protected Action getAction(Player player) throws InterruptedException {
         // Find the possible options, based on how many coins the player has
         List<Action> options = new ArrayList<>();
-        options.add(Action.Income);
-        options.add(Action.ForeignAid);
-        if (player.coins >= 7) options.add(Action.Coup);
-        options.add(Action.Tax);
-        if (player.coins >= 3) options.add(Action.Assassinate);
-        options.add(Action.Exchange);
-        options.add(Action.Steal);
+        if (player.coins < 10) {
+            options.add(Action.Income);
+            options.add(Action.ForeignAid);
+            if (player.coins >= 7) options.add(Action.Coup);
+            options.add(Action.Tax);
+            if (player.coins >= 3) options.add(Action.Assassinate);
+            options.add(Action.Exchange);
+            options.add(Action.Steal);
+        } else {
+            // If 10+ coins, only coup is allowed
+            options.add(Action.Coup);
+        }
 
         return getChoice(player, options.toArray(new Action[0]), "Choose an action");
     }
@@ -298,6 +313,9 @@ public class WebGame extends Game {
             message = String.format("%s is trying to do %s", player, sanitize(action.name()));
         }
 
+        // Filter out dead players (represented by null)
+        Player[] players = Arrays.stream(this.players).filter(Objects::nonNull).toArray(Player[]::new);
+
         // Foreign Aid is the only action that can be blocked by anyone
         if (action == Action.ForeignAid) {
             // For each player that is not the player doing the action, populate the map with the futures
@@ -336,7 +354,7 @@ public class WebGame extends Game {
         Future<String> f = getFirst(futureMap.keySet(), s -> !s.equalsIgnoreCase("pass"));
         // Signal to all players that the choice has finished
         // It's ok (maybe necessary) to send to players that have already made the choice
-        broadcast("stopChoice", null);
+        stopChoice();
         // Cancel any futures and threads that haven't completed yet
         // Cancelling a completed thread will just no-op
         futureMap.keySet().forEach(future -> future.cancel(true));

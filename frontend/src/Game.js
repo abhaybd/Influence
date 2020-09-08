@@ -56,7 +56,6 @@ class Game extends React.Component {
         switch (data.type) {
             case "update":
                 // This is an update message, so update the player information
-
                 if (this.state.playerColorMap === null) {
                     let colorMap = this.createPlayerColorMap(data.content);
                     this.setState({players: data.content, playerColorMap: colorMap});
@@ -71,11 +70,13 @@ class Game extends React.Component {
                 break;
 
             case "choice":
+                console.log("Making choice!");
                 // We need to prompt the player to make a choice, so display those now
                 this.setState({choices: data.content, message: data.message});
                 break;
 
             case "stopChoice":
+                console.log("Stopping choice!");
                 // The time for making choices has ended, so stop making a choice
                 // If the player wasn't already making a choice, this doesn't break anything
                 this.setState({choices: [], message: "Waiting for others..."});
