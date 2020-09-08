@@ -81,9 +81,9 @@ public class WebGame extends Game {
                     }
                     // Inform all players that this player reconnected
                     log("%s has reconnected to the game!", player.getName());
-                    final Object lock = playerReconnectionNotifier.get(name);
-                    synchronized (lock) {
-                        lock.notifyAll();
+                    final Object notifier = playerReconnectionNotifier.get(name);
+                    synchronized (notifier) {
+                        notifier.notifyAll();
                     }
                     return;
                 }
