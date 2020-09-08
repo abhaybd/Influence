@@ -15,9 +15,17 @@ import java.util.concurrent.Future;
 import java.util.function.Predicate;
 
 public class WebGame extends Game {
+    /**
+     * Maps a player object to the endpoint used for communication with that player.
+     */
     private final Map<Player, PlayerEndpoint> endpointMap;
-    private final Map<String, List<String>> cachedJson;
     private final Object endpointMapLock = new Object();
+    /**
+     * Stores json messages, so that if a player disconnects, important messages can be re-sent.
+     * Not all messages will be cached, only those that require responses.
+     * player name => list of json messages
+     */
+    private final Map<String, List<String>> cachedJson;
     private final ExecutorService executorService;
     private final Gson gson;
     private final Lobby lobby;
@@ -57,16 +65,9 @@ public class WebGame extends Game {
                     List<String> jsonList = cachedJson.get(player.getName());
                     // If the list exists, send all the stored messages
                     if (jsonList != null) {
-                        boolean success = true;
-                        // Iterate through the list and send the messages
-                        while (!jsonList.isEmpty()) {
-                            // Remove messages as we send them
-                            String json = jsonList.remove(0);
-                            success = newEndpoint.write(json);
-                            // If we failed to send this message, stop reconnecting
-                            if (!success) {
-                                // Add back the message that didn't send
-                                jsonList.add(0, json);
+                        for (String json : jsonList) {
+                            if (!newEndpoint.write(json)) {
+                                System.out.printf("Error writing message to %s on reconnect!\n", name);
                                 break;
                             }
                         }
@@ -106,26 +107,8 @@ public class WebGame extends Game {
         // Broadcast it to every connected player
         synchronized (endpointMapLock) {
             for (PlayerEndpoint endpoint : endpointMap.values()) {
-                write(endpoint, json);
+                endpoint.write(json);
             }
-        }
-    }
-
-    /**
-     * Send a JSON string to the specified player endpoint.
-     * This also caches the sent message if the write doesn't succeed, so it may be retransmitted later.
-     * Regardless if the write succeeds, an entry will be made in <code>cachedJson</code>, creating a new list.
-     *
-     * @param endpoint The endpoint to send to
-     * @param json     The JSON formatted message to send
-     */
-    private void write(PlayerEndpoint endpoint, String json) {
-        String name = endpoint.getName();
-        // If there is no entry for this player, create an empty list to store the cached json
-        cachedJson.computeIfAbsent(name, k -> Collections.synchronizedList(new ArrayList<>()));
-        // If the write was unsuccessful, store the json
-        if (!endpoint.write(json)) {
-            cachedJson.get(name).add(json);
         }
     }
 
@@ -197,8 +180,10 @@ public class WebGame extends Game {
         Message message = new Message("choice", prompt);
         message.content = gson.toJsonTree(choicesStr);
         String json = gson.toJson(message);
-        write(endpointMap.get(player), json);
-        cachedJson.get(player.getName()).add(json); // re-add it to the cache, and we'll clear manually
+        endpointMap.get(player).write(json);
+        // Add the message to the cache, so if the connection gets interrupted it can be re-sent
+        cachedJson.computeIfAbsent(player.getName(), k -> new ArrayList<>());
+        cachedJson.get(player.getName()).add(json);
 
         String responseJson = null;
         do {
@@ -216,6 +201,7 @@ public class WebGame extends Game {
         } while (responseJson == null);
 
         System.out.println("Got response: " + responseJson);
+        // Remove the cached json message
         cachedJson.get(player.getName()).remove(json);
         String response = gson.fromJson(responseJson, String.class); // The response will be a String
         // Find the choice that corresponds to the response
