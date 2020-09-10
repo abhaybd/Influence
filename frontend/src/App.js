@@ -182,7 +182,7 @@ class App extends React.Component {
                                       onStart={this.onStart}/>
                         </Route>
                         <Route path="/game">
-                            <Game players={[]} socket={this.store.socket} localPlayer={this.store.name}/>
+                            <Game socket={this.store.socket} localPlayer={this.store.name}/>
                         </Route>
                         <Route path="*" component={() => <NoMatch main={this.mainScreen}/>}/>
                     </Switch>

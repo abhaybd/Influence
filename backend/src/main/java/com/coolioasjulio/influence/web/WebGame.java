@@ -5,7 +5,6 @@ import com.coolioasjulio.influence.Card;
 import com.coolioasjulio.influence.Game;
 import com.coolioasjulio.influence.Player;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 
 import java.io.IOException;
 import java.util.*;
@@ -63,10 +62,7 @@ public class WebGame extends Game {
                     endpointMap.put(player, newEndpoint); // overwrite the old player with the new one
 
                     // Send an update message so the client can populate the game information
-                    Message message = new Message("update");
-                    message.content = gson.toJsonTree(Arrays.stream(players).filter(Objects::nonNull).toArray(Player[]::new));
-                    String updateJson = gson.toJson(message);
-                    newEndpoint.write(updateJson);
+                    updatePlayer(player);
 
                     // This is a list of messages that the player missed while disconnected
                     List<String> jsonList = cachedJson.get(player.getName());
@@ -82,6 +78,7 @@ public class WebGame extends Game {
                     // Inform all players that this player reconnected
                     log("%s has reconnected to the game!", player.getName());
                     final Object notifier = playerReconnectionNotifier.get(name);
+                    //noinspection SynchronizationOnLocalVariableOrMethodParameter
                     synchronized (notifier) {
                         notifier.notifyAll();
                     }
@@ -111,9 +108,8 @@ public class WebGame extends Game {
      */
     private void broadcast(String type, Object content) {
         // Create a new message
-        Message message = new Message(type);
-        // Serialize the content and the message
-        message.content = gson.toJsonTree(content);
+        Message message = new Message(type, content);
+        // Serialize the message
         String json = gson.toJson(message);
         // Broadcast it to every connected player
         synchronized (endpointMapLock) {
@@ -181,6 +177,19 @@ public class WebGame extends Game {
         return executorService.submit(() -> getChoice(player, choices, prompt));
     }
 
+    private void updatePlayer(Player player) {
+        // no-op if this player is dead/null
+        if (player != null) {
+            // The Update object will only store the cards of the player this update is sent to. This prevents cheating.
+            Update update = new Update(player, players);
+            Message message = new Message("update", update);
+            // Serialize the message
+            String messageJson = gson.toJson(message);
+            PlayerEndpoint endpoint = endpointMap.get(player);
+            endpoint.write(messageJson);
+        }
+    }
+
     /**
      * Prompts a player for a selection from multiple choices.
      *
@@ -195,8 +204,7 @@ public class WebGame extends Game {
         // Map the choices to their string representations
         String[] choicesStr = Arrays.stream(choices).map(Object::toString).toArray(String[]::new);
         // Serialize as JSON
-        Message message = new Message("choice", prompt);
-        message.content = gson.toJsonTree(choicesStr);
+        Message message = new Message("choice", choicesStr, prompt);
         String json = gson.toJson(message);
         endpointMap.get(player).write(json);
         // Add the message to the cache, so if the connection gets interrupted it can be re-sent
@@ -216,6 +224,7 @@ public class WebGame extends Game {
                 // The player isn't connected right now, so wait for reconnection
                 final Object notifier = playerReconnectionNotifier.get(player.getName());
                 // This object will be notified when the player reconnects
+                //noinspection SynchronizationOnLocalVariableOrMethodParameter
                 synchronized (notifier) {
                     while (!endpointMap.get(player).isConnected()) {
                         notifier.wait();
@@ -254,8 +263,8 @@ public class WebGame extends Game {
 
     @Override
     protected void update() {
-        // An update message consists of all the Player objects serialized into a JSON array
-        broadcast("update", Arrays.stream(players).filter(Objects::nonNull).toArray(Player[]::new));
+        // Update each player about the current game state
+        Arrays.stream(players).forEach(this::updatePlayer);
     }
 
     @Override
@@ -401,6 +410,31 @@ public class WebGame extends Game {
         return getChoice(player, hand, "Choose a card to sacrifice");
     }
 
+    private static class Update {
+        public Card[] localPlayerCards;
+        public PlayerState[] players;
+
+        public Update(Player localPlayer, Player[] players) {
+            this.localPlayerCards = localPlayer.getCards();
+            this.players = Arrays.stream(players)
+                    .filter(Objects::nonNull)
+                    .map(PlayerState::new)
+                    .toArray(PlayerState[]::new);
+        }
+    }
+
+    private static class PlayerState {
+        public String name;
+        public int coins;
+        public int influence;
+
+        public PlayerState(Player player) {
+            this.name = player.getName();
+            this.coins = player.coins;
+            this.influence = player.getInfluence();
+        }
+    }
+
     private static class Message {
         /**
          * The type of the message. The type dictates how the client will process this.
@@ -413,14 +447,15 @@ public class WebGame extends Game {
         /**
          * The JSON content of this message. How it's interpreted will depend on the content of {@link Message#type}
          */
-        public JsonElement content;
+        public Object content;
 
-        public Message(String type) {
-            this.type = type;
+        public Message(String type, Object content) {
+            this(type, content, null);
         }
 
-        public Message(String type, String message) {
+        public Message(String type, Object content, String message) {
             this.type = type;
+            this.content = content;
             this.message = message;
         }
     }

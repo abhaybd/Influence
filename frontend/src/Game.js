@@ -12,9 +12,8 @@ class Game extends React.Component {
 
         this.onMessage = this.onMessage.bind(this);
         this.onDisconnect = this.onDisconnect.bind(this);
-        this.getLocalPlayer = this.getLocalPlayer.bind(this);
 
-        this.state = {players: props.players ?? [], choices: [], message: WAITING_MSG, log: ["Started game!"], playerColorMap: null}
+        this.state = {players: [], localPlayerCards: [], choices: [], message: WAITING_MSG, log: ["Started game!"], playerColorMap: null}
     }
 
 
@@ -59,10 +58,10 @@ class Game extends React.Component {
             case "update":
                 // This is an update message, so update the player information
                 if (this.state.playerColorMap === null) {
-                    let colorMap = this.createPlayerColorMap(data.content);
-                    this.setState({players: data.content, playerColorMap: colorMap});
+                    let colorMap = this.createPlayerColorMap(data.content.players);
+                    this.setState({players: data.content.players, localPlayerCards: data.content.localPlayerCards, playerColorMap: colorMap});
                 } else {
-                    this.setState({players: data.content});
+                    this.setState({players: data.content.players, localPlayerCards: data.content.localPlayerCards});
                 }
                 break;
 
@@ -112,22 +111,6 @@ class Game extends React.Component {
         return map;
     }
 
-    numInfluence(cards) {
-        // Count the number of non-null cards
-        return cards.filter(x => x !== null).length;
-    }
-
-    getLocalPlayer() {
-        // Find the player from the list of players that matches the local player's name
-        for (let player of this.state.players) {
-            if (player.name === this.localPlayerName) {
-                return player;
-            }
-        }
-        // If no such player exists, just return an empty player
-        return {name: "", cards: [], coins: 0};
-    }
-
     onChoice(choice) {
         // The player has made a choice, so stop displaying the choices
         this.setState({choices: [], message: WAITING_MSG});
@@ -174,11 +157,11 @@ class Game extends React.Component {
                 <div className="game-container">
                     {this.state.players.map(player => <Player key={player.name} player={player.name}
                                                               coins={player.coins}
-                                                              influence={this.numInfluence(player.cards)}
+                                                              influence={player.influence}
                                                               color={this.state.playerColorMap[player.name]}/>)}
                 </div>
                 <div className="game-container">
-                    {this.getLocalPlayer().cards.map((card, i) => card === null ? null :
+                    {this.state.localPlayerCards.map((card, i) => card === null ? null :
                         <div className="card-names" key={i}>{card}</div>)}
                 </div>
                 <div className="game-container">
