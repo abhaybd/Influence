@@ -1,5 +1,6 @@
 package com.coolioasjulio.influence.web;
 
+import com.coolioasjulio.influence.Game;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
@@ -190,7 +191,7 @@ public class Lobby {
      * @param player The player to add.
      * @return True if the player was successfully added, false otherwise. If this operation failed, it's either because the lobby already started, or the name was already taken.
      */
-    public boolean addPlayer(PlayerEndpoint player) {
+    public RejectionReason addPlayer(PlayerEndpoint player) {
         // synchronize to avoid threading issues
         synchronized (playersLock) {
             if (!started.get()) {
@@ -198,7 +199,9 @@ public class Lobby {
                 // Names must be unique
                 // This isn't a great way to handle it, since it doesn't indicate to the user exactly why it failed
                 if (containsPlayer(player.getName())) {
-                    return false;
+                    return RejectionReason.NAME_TAKEN;
+                } else if (players.size() == Game.MAX_PLAYERS) {
+                    return RejectionReason.LOBBY_FULL;
                 }
                 System.out.printf("Player %s connected to lobby %s!\n", player.getName(), code);
                 // Add this player to the list of players
@@ -206,7 +209,7 @@ public class Lobby {
                 // Transmit the list of all players in the lobby to all players
                 String list = new Gson().toJson(players.stream().map(PlayerEndpoint::getName).toArray(String[]::new));
                 players.forEach(p -> p.write(list));
-                return true;
+                return RejectionReason.NONE;
             } else {
                 // Reconnecting to a game that already started
                 System.out.printf("%s is trying to reconnect to %s...", player.getName(), code);
@@ -217,11 +220,11 @@ public class Lobby {
                         players.set(i, player); // Replace the old endpoint with the new one
                         game.playerReconnected(player); // signal to the game that this player has reconnected
                         System.out.println("Success!");
-                        return true;
+                        return RejectionReason.NONE;
                     }
                 }
                 System.out.println("Failed!");
-                return false;
+                return RejectionReason.LOBBY_STARTED;
             }
         }
     }
@@ -272,7 +275,7 @@ public class Lobby {
     public boolean startGameAsync() {
         synchronized (playersLock) {
             // If there aren't enough players or the game has already started, no-op.
-            if (players.size() < 2 || started.getAndSet(true)) return false;
+            if (players.size() < Game.MIN_PLAYERS || started.getAndSet(true)) return false;
             // Start a new game on a new thread
             gameThread = new Thread(() -> startGame(false));
             gameThread.start();
@@ -290,7 +293,7 @@ public class Lobby {
         // This is because when we're using startGameAsync(), the checks are performed before starting this thread
         if (checkPreconditions) {
             synchronized (playersLock) {
-                if (players.size() < 2 || started.getAndSet(true)) return;
+                if (players.size() < Game.MIN_PLAYERS || started.getAndSet(true)) return;
             }
         }
         System.out.println("Starting lobby: " + code);
@@ -325,5 +328,9 @@ public class Lobby {
             lobbyMap.remove(code); // Remove the lobby from the map
         }
         System.out.printf("Thread for lobby %s terminated!\n", code);
+    }
+
+    public enum RejectionReason {
+        LOBBY_FULL, NAME_TAKEN, LOBBY_STARTED, NONE
     }
 }

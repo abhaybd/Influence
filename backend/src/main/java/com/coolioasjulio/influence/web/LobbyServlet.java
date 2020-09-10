@@ -1,5 +1,6 @@
 package com.coolioasjulio.influence.web;
 
+import com.coolioasjulio.influence.Game;
 import com.google.gson.Gson;
 
 import javax.servlet.http.HttpServlet;
@@ -12,6 +13,7 @@ public class LobbyServlet extends HttpServlet {
     private static final String TYPE_LOBBY_STARTED = "started";
     private static final String TYPE_LOBBY_EXISTS = "exists";
     private static final String TYPE_NUM_PLAYERS_IN_LOBBY = "numPlayers";
+    private static final String TYPE_CAN_JOIN = "canJoin";
     private static final String TYPE_IS_PLAYER_IN_LOBBY = "playerInLobby";
     private static final String TYPE_CREATE_LOBBY = "create";
     private static final String TYPE_START_LOBBY = "start";
@@ -26,7 +28,6 @@ public class LobbyServlet extends HttpServlet {
             String type = request.type;
             // All requests must define a request type
             if (type != null) {
-                String code = request.code;
                 Response<?> response = null;
                 // Depending on the request type, it's either an info request or an action request
                 switch (type) {
@@ -34,6 +35,7 @@ public class LobbyServlet extends HttpServlet {
                     case TYPE_LOBBY_EXISTS:
                     case TYPE_NUM_PLAYERS_IN_LOBBY:
                     case TYPE_IS_PLAYER_IN_LOBBY:
+                    case TYPE_CAN_JOIN:
                         response = processInfo(httpResp, request);
                         break;
 
@@ -136,6 +138,21 @@ public class LobbyServlet extends HttpServlet {
                     } else {
                         // Report an error if the lobby doesn't exist
                         httpResp.sendError(422, "Lobby doesn't exist");
+                    }
+                    break;
+
+                case TYPE_CAN_JOIN:
+                    // We need the content key to be defined
+                    if (content != null) {
+                        // Check if the lobby exists and if it has the player
+                        int responseCode = 0;
+                        if (lobby != null) {
+                            // 0b11 => success, 0b10 => lobby full, 0b01 => name taken, 0b00 => lobby doesn't exist
+                            responseCode = ((lobby.containsPlayer(content) ? 0 : 1) << 1) | (lobby.numPlayers() < Game.MAX_PLAYERS ? 1 : 0);
+                        }
+                        response = new Response<>(responseCode);
+                    } else {
+                        httpResp.sendError(400, "canJoin request must define a content key!");
                     }
                     break;
 

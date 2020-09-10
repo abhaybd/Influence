@@ -4,11 +4,14 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public abstract class Game {
+    public static final int MIN_PLAYERS = 2;
+    public static final int MAX_PLAYERS = 6;
+
     protected final Player[] players;
     private final List<Card> deck;
 
     public Game(String[] names) {
-        if (names.length < 2 || names.length > 6) throw new IllegalArgumentException("There must be 2-6 players!");
+        if (names.length < MIN_PLAYERS || names.length > MAX_PLAYERS) throw new IllegalArgumentException("Invalid number of players!");
 
         players = new Player[names.length];
         deck = new ArrayList<>(3 * Card.values().length);

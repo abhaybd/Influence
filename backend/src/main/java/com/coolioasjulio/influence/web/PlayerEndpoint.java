@@ -29,10 +29,11 @@ public class PlayerEndpoint {
         if (lobby != null) {
             // Try to add this player to the lobby
             connected = true;
-            if (!lobby.addPlayer(this)) {
+            Lobby.RejectionReason reason = lobby.addPlayer(this);
+            if (reason != Lobby.RejectionReason.NONE) {
                 // If unsuccessful, close the player session
                 connected = false;
-                session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Invalid lobby or name already taken!"));
+                session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Could not join lobby! Error: " + reason));
             }
         } else {
             // If the lobby doesn't exist doesn't, close the session

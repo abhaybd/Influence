@@ -28,15 +28,15 @@ class LobbyTest {
         Lobby lobby = Lobby.create();
         String name = "Player";
 
-        assertTrue(lobby.addPlayer(createPlayer(name)));
+        assertEquals(Lobby.RejectionReason.NONE, lobby.addPlayer(createPlayer(name)));
         assertEquals(1, lobby.numPlayers());
 
-        assertFalse(lobby.addPlayer(createPlayer(name)));
+        assertEquals(Lobby.RejectionReason.NAME_TAKEN, lobby.addPlayer(createPlayer(name)));
         assertEquals(1, lobby.numPlayers());
 
         assertFalse(lobby.startGameAsync());
 
-        assertTrue(lobby.addPlayer(createPlayer("Player2")));
+        assertEquals(Lobby.RejectionReason.NONE, lobby.addPlayer(createPlayer("Player2")));
         assertTrue(lobby.startGameAsync());
     }
 
@@ -59,7 +59,7 @@ class LobbyTest {
             e.printStackTrace();
         }
 
-        assertFalse(lobby.addPlayer(createPlayer("Player3")));
+        assertNotEquals(Lobby.RejectionReason.NONE, lobby.addPlayer(createPlayer("Player3")));
         lobby.removePlayer(player1);
         lobby.removePlayer(player2);
     }
@@ -84,7 +84,7 @@ class LobbyTest {
     public void removePlayer() {
         Lobby lobby = Lobby.create();
         PlayerEndpoint player = createPlayer("p1");
-        assertTrue(lobby.addPlayer(player));
+        assertEquals(Lobby.RejectionReason.NONE, lobby.addPlayer(player));
         lobby.removePlayer(player);
         assertEquals(0, lobby.numPlayers());
     }
