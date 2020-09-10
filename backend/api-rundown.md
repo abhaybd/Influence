@@ -6,7 +6,7 @@ This is a rundown on the API the backend uses to communicate with the frontend. 
 
 You can make POST requests to `/lobby` in order to either retrieve information or perform actions related to lobbies. There are 2 broad types of requests, `action` requests and `info` requests.
 
-The content type of all requests must be `application/json`, and they must define a `type` key, and possibly a `code` key.
+The content type of all requests must be `application/json`, and they must define a `type` key, and possibly a `code` key, and/or a `content` key.
 
 If a request doesn't define the appropriate keys, the server will respond with HTTP 400.
 
@@ -43,10 +43,24 @@ Info requests retrieve information about lobbies.
   - Gets the number of players in the lobby with the specified code
   - If the lobby exists, will respond with HTTP 200, and the body will be in the form `{"content":numPlayers}`, where `numPlayers` is the number of players
   - If the lobby doesn't exist, will respond with HTTP 422
+- `canJoin`
+  - Of the form `{"type":"playerInLobby", "code":"EXAMPLE-CODE", "content":"PLAYER-NAME"}`
+  - Checks if the lobby
+    - Is not full
+    - Has no other player in the lobby with that name
+  - Requires additional `content` key
+  - If not all required keys are defined, responds with HTTP 400
+  - If the request is not malformed, returns HTTP 200
+  - The request body will be of the form `{"content":RESPONSE_CODE}`
+    - The response code will be a 2-bit bitmask (an integer) representing either a success or a reason for failure. The least significant bit represents whether or not the lobby has room for another player. The next bit represents whether or not the specified name is available.
+    - `0b11` - A player can join this lobby with the specified name
+    - `0b10` - This name is not taken, but the lobby is full
+    - `0b01` - The lobby has room, but the specified name is taken
+    - `0b00` - Either the lobby doesn't exist, or the room is full and the name is taken
 - `playerInLobby`
   - Of the form `{"type":"playerInLobby", "code":"EXAMPLE-CODE", "content":"PLAYER-NAME"}`
   - Checks if a player with the specified name is in the specified lobby. This is useful to gracefully check for taken names without initiating a websocket connection.
-  - As you can see, requires an additional `content` key, in which the player name to check for is specified.
+  - Requires an additional `content` key, in which the player name to check for is specified.
   - Returns HTTP 200 if all 3 required keys are defined.
   - If the specified lobby exists and a player with the specified name exists, returns `{"content":true}`. Otherwise, returns `{"content":false}`.
   - If the required keys are not all defined, responds with HTTP 400.
