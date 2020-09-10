@@ -168,7 +168,7 @@ class Game extends React.Component {
                 <div className="game-container">
                     <strong>{this.state.message}</strong>
                 </div>
-                <div className="game-container">
+                <div className="choice-container">
                     {this.state.choices.map((choice, i) => <Choice key={i} choice={choice}/>)}
                 </div>
             </div>

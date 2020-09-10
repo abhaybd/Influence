@@ -11,19 +11,22 @@
 
 .game-container {
     background-color: #282c34;
+    font-family: "Alata", Arial, sans-serif;
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
+}
+
+.choice-container {
+    background-color: #282c34;
     font-family: "Alata", Arial, sans-serif;
 }
 
 .choice-icon {
     height: 1em;
     width: 10em;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
     line-height: 1em;
     font-size: 0.9em;
     margin: 0.5em 0.5em 0.5em 0.5em;
@@ -45,14 +48,12 @@
 }
 
 .local-player-icon {
-    /* background-color: #000; */
     height: 4em;
     width: 6.3em;
     font-size: 0.8em;
     margin: 0.5em 0.5em 0.5em 0.5em;
     padding: 0.5em 0.5em 0.8em 0.5em;
     text-align: center;
-    /* border: double white; */
     border-left: 6px solid red;
     border-radius: 10px;
 }
