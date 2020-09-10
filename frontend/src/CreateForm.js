@@ -1,4 +1,5 @@
 import React from "react";
+import "./Form.css";
 import {ReactComponent as BackIcon} from './back.svg';
 import {createSocket, doPost} from "./App";
 import Lobby from "./Lobby";

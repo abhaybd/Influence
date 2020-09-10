@@ -1,0 +1,60 @@
+#create-name {
+    font-size: 20px;
+    font-weight: bold;
+    word-wrap: break-word;
+    margin: 0 0 0.6em;
+    font-family: "Poppins", Arial, sans-serif;
+}
+
+#create-code {
+    font-size: 20px;
+    font-weight: bold;
+    word-wrap: break-word;
+    margin: 0.8em 0 0;
+    font-family: "Poppins", Arial, sans-serif;
+}
+
+.form-table {
+    background-color: #eeeeee;
+    color: #282c34;
+    padding: 30px 20px 30px 20px;
+    text-align: center;
+    width: 300px;
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -40%);
+    border-radius:10px;
+}
+
+input[type="text"] {
+    height: calc(10px + 2vmin);
+    width: calc(165px + 2vmin);
+    padding-left: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-radius: 10px;
+    background: none;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 0;
+    font-family: "Poppins", Arial, sans-serif;
+}
+
+input[type="submit"] {
+    border: none;
+    width: 100%;
+    background: #00abc6;
+    color: #fff;
+    font-family: "Poppins", Arial, sans-serif;
+    font-weight: 0;
+    font-size: 0.9em;
+    padding: 0.5em 0.5em;
+    border-radius: 10px;
+    margin: 0.7em 0 -1em 0;
+}
+
+input[type="submit"]:hover {
+    background: #006e7f;
+}

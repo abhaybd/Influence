@@ -1,0 +1,36 @@
+#captain-color {
+    color: #ff863a;
+}
+
+#assassin-color {
+    color: #ff595e;
+}
+
+#duke-color {
+    color: #8ac926;
+}
+
+#ambassador-color {
+    color: #1982c4;
+}
+
+#contessa-color {
+    color: #6a4c93;
+}
+
+#rules-box {
+    margin: 10px;
+    position: absolute;
+    background: #fff;
+    top: 5%;
+    padding: 30px 20px 5px 20px;
+    min-height: 10vh;
+    height: 80%;
+    width: 60%;
+    color: #282c34;
+    font-size: 0.7em;
+    text-align: left;
+    overflow-y: scroll;
+    border-radius: 10px;
+    z-index: 1;
+}

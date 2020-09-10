@@ -1,4 +1,5 @@
 import React from "react";
+import "./Game.css";
 import {createSocket} from "./App";
 import queryString from "query-string";
 import {withRouter} from "react-router";

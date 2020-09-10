@@ -1,5 +1,6 @@
 //Rules Dialogue 'Show Rules'
 import React from "react";
+import "./Rules.css";
 import {ReactComponent as BackIcon} from "./back.svg";
 
 export default function Rules(props) {

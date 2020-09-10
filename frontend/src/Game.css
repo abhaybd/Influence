@@ -1,0 +1,95 @@
+.card-names {
+    height: 1.5em;
+    width:7em;
+    line-height:1.5em;
+    margin: 1em 1em 1em 1em;
+    text-align: center;
+    font-size: 0.8em;
+    border-radius: 10px;
+    background-color: #373d48;
+}
+
+.game-container {
+    background-color: #282c34;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    font-family: "Alata", Arial, sans-serif;
+}
+
+.choice-icon {
+    height: 1em;
+    width: 10em;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    line-height: 1em;
+    font-size: 0.9em;
+    margin: 0.5em 0.5em 0.5em 0.5em;
+    padding: 0.5em 0.5em 0.5em 0.5em;
+    text-align: center;
+    border-radius: 10px;
+    background-color: #596273;
+    color: white;
+}
+
+.player-icon {
+    height: 4em;
+    width: 6.3em;
+    font-size: 0.8em;
+    margin: 0.5em 0.5em 0.5em 0.5em;
+    padding: 0.5em 0.5em 0.8em 0.5em;
+    text-align: center;
+    border-radius: 10px;
+}
+
+.local-player-icon {
+    /* background-color: #000; */
+    height: 4em;
+    width: 6.3em;
+    font-size: 0.8em;
+    margin: 0.5em 0.5em 0.5em 0.5em;
+    padding: 0.5em 0.5em 0.8em 0.5em;
+    text-align: center;
+    /* border: double white; */
+    border-left: 6px solid red;
+    border-radius: 10px;
+}
+
+#playerText {
+    color: #434956;
+    font-size: 1.3em;
+    font-family: "Alata", Arial, sans-serif;
+}
+
+#coinText {
+    font-size: 0.8em;
+    font-family: "Alata", Arial, sans-serif;
+}
+
+#influenceText {
+    font-size: 0.8em;
+    font-family: "Alata", Arial, sans-serif;
+}
+
+#event-log {
+    text-align: left;
+    margin-left: 1ch;
+    font-size: 0.5em;
+    font-family: "Alata", Arial, sans-serif;
+}
+
+#game-div{
+    width: 100%;
+}
+
+.game-button {
+    background: none;
+    border: white;
+    border-radius: 10px;
+    color: #fff;
+    font-family: "Alata", Arial, sans-serif;
+    font-size: 0.7em;
+    cursor: pointer;
+}
