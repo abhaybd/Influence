@@ -19,6 +19,11 @@ public class WebGame extends Game {
      * Maps a player object to the endpoint used for communication with that player.
      */
     private final Map<Player, PlayerEndpoint> endpointMap;
+    /**
+     * Used to synchronize on the endpoint map. The endpoint map is itself a synchronized collection,
+     * so this is only really necessary while modifying the map. This is because maps fail fast during iteration,
+     * so we want to prevent other threads from modifying it.
+     */
     private final Object endpointMapLock = new Object();
     /**
      * Stores json messages, so that if a player disconnects, important messages can be re-sent.
