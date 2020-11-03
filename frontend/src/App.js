@@ -38,7 +38,7 @@ function doPost(content, callback) {
 
 function getWSHostName(loc) {
     let hostname = loc.hostname;
-    return process.env.NODE_ENV === "production" ? process.env.REACT_APP_WS_DOMAIN ?? hostname : hostname;
+    return process.env.NODE_ENV === "production" ? process.env.REACT_APP_WS_DOMAIN ?? hostname : hostname + ":8080";
 }
 
 function createSocket(name, code, onopen = null, onclose = null) {
