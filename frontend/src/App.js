@@ -40,7 +40,7 @@ function createSocket(name, code, onopen = null, onclose = null) {
     let loc = window.location;
     let hostname = loc.hostname.replaceAll(/^www\./g, "");
     let protocol = loc.protocol === "https:" ? "wss:" : "ws:"; // use SSL if we're currently using SSL, otherwise don't
-    let newUri = `${protocol}//${hostname}:8080/ws/join/${code}/${name}`; // build the websocket uri
+    let newUri = `${protocol}//${hostname}/ws/join/${code}/${name}`; // build the websocket uri
     console.log(newUri);
     let socket = new WebSocket(newUri); // Open the websocket connection
     socket.onopen = onopen ?? function (event) {
