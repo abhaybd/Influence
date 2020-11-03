@@ -36,9 +36,14 @@ function doPost(content, callback) {
     http.send(body);
 }
 
+function getWSHostName(loc) {
+    let hostname = loc.hostname;
+    return process.env.NODE_ENV === "production" ? process.env.REACT_APP_WS_DOMAIN ?? hostname : hostname;
+}
+
 function createSocket(name, code, onopen = null, onclose = null) {
     let loc = window.location;
-    let hostname = loc.hostname.replaceAll(/^www\./g, "");
+    let hostname = getWSHostName(loc);
     let protocol = loc.protocol === "https:" ? "wss:" : "ws:"; // use SSL if we're currently using SSL, otherwise don't
     let newUri = `${protocol}//${hostname}/ws/join/${code}/${name}`; // build the websocket uri
     console.log(newUri);
